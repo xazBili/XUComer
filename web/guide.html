@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使用方法 · XUComer</title>
+<meta name="description" content="XUComer 使用指南：安装、启用、切换音效、调节音量、导入自定义音效、主题与语言、托盘与自启、常见问题。">
+<meta name="theme-color" content="#0b0d13">
+<link rel="icon" href="assets/img/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/img/icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="doc-body">
+
+<header class="doc-top">
+  <a class="doc-back" href="index.html">
+    <span aria-hidden="true">←</span> 返回首页
+  </a>
+  <a class="doc-brand" href="index.html">
+    <img class="brand-img" src="assets/img/icon.png" alt="" width="26" height="26">
+    <b>XUComer</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="doc-spacer"></span>
+
+  <div class="pill-group" id="themePicker" role="group" aria-label="同步主题"></div>
+
+  <label class="pick">
+    <span class="pick-label">语言</span>
+    <select id="langPicker" aria-label="界面语言"></select>
+  </label>
+</header>
+
+<div class="doc">
+  <aside class="doc-side">
+    <nav class="doc-nav">
+      <h4 data-group="start">开始使用</h4>
+      <a href="#install" data-nav="install">安装</a>
+      <a href="#enable" data-nav="enable">启用与关闭</a>
+      <a href="#pick" data-nav="pick">切换音效</a>
+      <a href="#volume" data-nav="volume">调节音量</a>
+      <a href="#test" data-nav="test">试听</a>
+      <a href="#demo" data-nav="demo">在线演示</a>
+
+      <h4 data-group="sound">音效</h4>
+      <a href="#up" data-nav="up">抬起音</a>
+      <a href="#import" data-nav="import">导入自定义音效</a>
+      <a href="#manage" data-nav="manage">管理自定义音效</a>
+
+      <h4 data-group="look">外观</h4>
+      <a href="#theme" data-nav="theme">主题</a>
+      <a href="#lang" data-nav="lang">语言</a>
+      <a href="#appearance" data-nav="appearance">网页同步设置</a>
+
+      <h4 data-group="other">其它</h4>
+      <a href="#tray" data-nav="tray">托盘与开机自启</a>
+      <a href="#data" data-nav="data">设置保存在哪</a>
+      <a href="#faq" data-nav="faq">常见问题</a>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+
+    <h1 data-i18n="h1">使用指南</h1>
+    <p class="doc-lede" data-i18n="lede">
+      XUComer 是一款开源的键盘 / 鼠标按键音效模拟器。它常驻后台，全局监听你的每一次敲击，
+      实时播放对应的按键音。下面按使用顺序把每个功能讲清楚，全部看完约 5 分钟。
+    </p>
+
+    <h2 id="install">安装</h2>
+    <p>软件是绿色免安装的，不需要管理员权限。</p>
+    <ol>
+      <li>在<a href="index.html">首页</a>点「下载」，选 <b>Windows x64</b>（多数电脑）或 <b>Windows x86</b>（较老的机器）。</li>
+      <li>下载得到 <code>XUComer-win-x64.zip</code>，右键解压到任意目录（例如 <code>D:\XUComer</code>）。</li>
+      <li>解压后目录里直接就是 <code>XUComer.exe</code> 和 <code>_internal</code> 文件夹，<b>两个要放在一起</b>，不要只复制 exe。</li>
+      <li>双击 <code>XUComer.exe</code> 即可运行。</li>
+    </ol>
+    <div class="note">
+      <b>不确定系统位数？</b>
+      按 <code>Win + I</code> 打开设置 → 系统 → 关于，看「系统类型」一栏。
+      64 位系统装 x64 即可；x86 版本功能完全一致，只是面向老旧设备。
+    </div>
+    <div class="note warn">
+      <b>杀毒软件误报？</b>
+      程序由 PyInstaller 打包且未做代码签名，个别杀软会误判。源码完全公开，
+      可自行核对；加入信任区即可。
+    </div>
+
+    <h2 id="enable">启用与关闭</h2>
+    <p>
+      首次启动时软件处于<b>未启用</b>状态——顶部「启用」开关是灰的，这时敲键盘不会有任何声音。
+      这是为了避免一开机就打扰你。
+    </p>
+    <ul>
+      <li>点一下顶部「<b>启用</b>」右侧的开关，变亮即开始工作。</li>
+      <li>再点一下即关闭，键盘鼠标恢复安静。</li>
+      <li>没有「启用」时，键盘和鼠标的试听按钮依然可用，方便先挑音色。</li>
+    </ul>
+
+    <h2 id="pick">切换音效</h2>
+    <p>主界面有两张卡片，分别是「键盘音效」和「鼠标音效」。</p>
+    <ol>
+      <li>点卡片中间的下拉框，会列出所有可用音效包。</li>
+      <li>选中即切换，并<b>自动试听一次</b>。</li>
+      <li>内置 11 组键盘音效（绿轴、蓝轴、茶轴、线性、轻触等）与 14 组鼠标音效（G203、GPX、DeathAdder V2 等）。</li>
+    </ol>
+    <p>每张卡片右上角还有一个开关，可以单独关掉键盘或鼠标的声音——比如只想让鼠标响、键盘保持安静。</p>
+
+    <h2 id="volume">调节音量</h2>
+    <p>每张卡片下面都有音量滑条，范围 0 ~ 100，键盘与鼠标<b>各自独立</b>，拖动时右侧数字会实时变化，松手即保存。</p>
+
+    <h2 id="test">试听</h2>
+    <p>卡片标题右侧的「试听」按钮会播放一次「按下」的声音。试听不受「启用」开关影响，随时可用。</p>
+
+    <h2 id="demo">在线演示</h2>
+    <p>
+      不想先下载？在下面的输入框里随便敲几个字，网页会用浏览器实时合成按键音，
+      <span data-i18n="demoHint">不想先下载？在下面的输入框里随便敲几个字，网页会用浏览器实时合成按键音，让你先感受一下「按下 / 抬起」的手感。</span>
+    </p>
+
+    <div class="demo">
+      <div class="demo-stage">
+        <textarea id="pad" class="pad" spellcheck="false"
+          placeholder="在这里随便敲几个字……">XUComer 让每一次敲击都有回响</textarea>
+
+        <div class="demo-keys" id="keyRow" aria-hidden="true"></div>
+
+        <div class="demo-readout">
+          <div><b id="countDown">0</b><span data-i18n="labelDown">按下</span></div>
+          <div><b id="countUp">0</b><span data-i18n="labelUp">抬起</span></div>
+          <div><b id="wpm">0</b><span>WPM</span></div>
+        </div>
+      </div>
+
+      <aside class="demo-panel">
+        <label class="drow">
+          <span data-i18n="voice">音效</span>
+          <select id="voice">
+            <option value="linear" data-voice="vLinear">Linear · 线性轻触</option>
+            <option value="tactile" data-voice="vTactile">Tactile · 段落感</option>
+            <option value="clicky" data-voice="vClicky" selected>Clicky · 清脆段落</option>
+            <option value="thock" data-voice="vThock">Thock · 闷厚低频</option>
+          </select>
+        </label>
+
+        <label class="drow">
+          <span id="volKbLabel">键盘音量 <em id="volKbVal">70</em></span>
+          <input id="volKb" type="range" min="0" max="100" value="70">
+        </label>
+
+        <label class="drow">
+          <span id="volMsLabel">鼠标音量 <em id="volMsVal">60</em></span>
+          <input id="volMs" type="range" min="0" max="100" value="60">
+        </label>
+
+        <label class="drow drow-sw">
+          <span id="upOnLabel">抬起也发声</span>
+          <input id="upOn" type="checkbox" checked>
+        </label>
+
+        <div class="pad-mouse" id="mousePad" data-i18n="mousePad">点这里模拟鼠标点击</div>
+      </aside>
+    </div>
+
+    <div class="note">
+      <b>声音是网页合成的</b>
+      这里由浏览器实时生成，只用来示意手感，和软件内 25 组真实音色不同。
+      想听真实音色，下载后点卡片上的「试听」。
+    </div>
+
+    <h2 id="up">抬起音</h2>
+    <p>
+      真实的机械键盘按下与松开是两种声音。XUComer 支持把「抬起音」单独开关：
+      勾选卡片上的「抬起音」复选框即开启。
+    </p>
+    <ul>
+      <li>部分音效包（主要是鼠标包）本身没有抬起音，此时该复选框会自动置灰。</li>
+      <li>开启后每次松键也会发声，长按场景下更接近真实手感。</li>
+      <li>不想听到松键声就不勾，只保留按下音。</li>
+    </ul>
+
+    <h2 id="import">导入自定义音效</h2>
+    <p>想用自己的录音做音效，不用任何音频软件：</p>
+    <ol>
+      <li>点卡片上的「导入自定义」。</li>
+      <li>选择音频文件，支持 <code>wav</code> / <code>mp3</code> / <code>ogg</code> / <code>flac</code> / <code>m4a</code> 等常见格式。</li>
+      <li>键盘音效会询问是否为「抬起音」单独选一个文件。<br>
+        选<b>否</b>的话，程序会从按下音的尾部自动衍生一个抬起音。</li>
+      <li>输入音效包名称（默认 <code>XUComer Custom N</code>），确定。</li>
+      <li>等待几秒，处理完成后自动选中并试听。</li>
+    </ol>
+    <p>导入时程序会自动完成这些处理：直流去除 → 首尾静音裁剪 → 多次击打切分 → 限长 260 毫秒 → 首尾淡入淡出 → 峰值归一化 → 生成多个微变速版本。</p>
+    <div class="note">
+      <b>为什么要生成多个版本？</b>
+      连打时随机轮换不同版本，避免每次声音一模一样带来的机械感。
+    </div>
+
+    <h2 id="manage">管理自定义音效</h2>
+    <p>
+      选中一个<b>自定义</b>音效包时，「删除」按钮会亮起，点击确认即可移除。
+      内置音效包不可删除，按钮始终置灰。
+    </p>
+
+    <h2 id="theme">主题</h2>
+    <p>点标题栏右侧的 <b>⚙</b> 按钮展开设置面板（它是一个独立小窗，不会改变主窗口大小、也不会遮住任何控件）。</p>
+    <ul>
+      <li>内置 <b>40 套</b>主题：28 套暗色 + 12 套浅色。</li>
+      <li>下拉列表每项左侧有色块预览，选中立即生效。</li>
+      <li>换主题不只是换颜色——圆角大小、边框粗细、内间距、标题字号、窗口宽度都会跟着变，
+        所以有方角工业风、大圆角卡片风、浅色网格风等不同版式。</li>
+    </ul>
+
+    <h2 id="lang">语言</h2>
+    <p>同一设置面板里的「语言」下拉，提供 18 种语言，外加默认的「<b>跟随系统</b>」：</p>
+    <p class="langs">
+      简体中文 · 繁體中文 · English · 日本語 · 한국어 · Français · Deutsch · Español · Português ·
+      Русский · Italiano · Nederlands · Polski · Türkçe · العربية · ไทย · Tiếng Việt · Bahasa Indonesia
+    </p>
+    <p>选择「跟随系统」时会读取 Windows 的显示语言自动匹配，切换即时生效，无需重启。</p>
+
+    <h2 id="appearance">网页同步设置</h2>
+    <p>
+      本网站的右上角有两个选择器，和软件里的设置一一对应，方便你提前挑好：
+    </p>
+    <ul>
+      <li><b>主题</b>：一排色点，每一个都取自软件里的真实配色（共 40 套）。点一下，整个网页立刻换成该主题的底色、卡片色与强调色，和软件里选中时的观感一致。</li>
+      <li><b>语言</b>：支持与软件相同的 18 种语言，另有默认的「跟随系统」。切换后网页界面文字、导航与本节标题都会跟着变。</li>
+    </ul>
+    <p>两个设置都会记在浏览器本地，下次打开自动沿用；换一台设备则需要重新选一次。</p>
+    <div class="note">
+      <b>为什么主题里有亮有暗？</b>
+      软件本身就同时提供 28 套暗色与 12 套浅色主题，网页照搬了这个分类。
+      选到浅色主题时，网页会整站切成浅色排版，和软件里的效果一致。
+    </div>
+
+    <h2 id="tray">托盘与开机自启</h2>
+    <ul>
+      <li><b>托盘</b>：设置面板里勾选「托盘」后，点关闭按钮不会退出程序，而是最小化到右下角托盘区，双击图标即可唤回窗口。</li>
+      <li><b>开机自启</b>：勾选「开机自启」后，程序会写入当前用户的启动项，下次开机自动运行（仍然默认不启用，不会一开机就响）。</li>
+      <li><b>退出</b>：点设置面板里的「退出」按钮可完全关闭程序。</li>
+    </ul>
+
+    <h2 id="data">设置保存在哪</h2>
+    <p>所有设置自动保存，无需手动操作：</p>
+    <ul>
+      <li>配置文件：<code>%APPDATA%\XUComer\settings.json</code></li>
+      <li>自定义音效：<code>%APPDATA%\XUComer\sounds\</code></li>
+    </ul>
+    <p>把它们删掉即可恢复默认设置；覆盖安装或更换程序目录都不会丢失。</p>
+
+    <h2 id="faq">常见问题</h2>
+
+    <h3>敲键盘完全没声音？</h3>
+    <p>先确认顶部的「启用」开关是否已打开（默认是关闭的）。其次检查对应卡片的开关、音量是否为 0。都正常的话，用「试听」按钮确认音效本身能否播放。</p>
+
+    <h3>游戏里能听到吗？</h3>
+    <p>可以。全局监听工作在系统层面，全屏游戏中同样发声。极少数带反作弊的游戏可能限制全局钩子，此时请以该游戏规则为准。</p>
+
+    <h3>需要联网或管理员权限吗？</h3>
+    <p>都不需要。所有音效都在本地，程序不发起任何网络请求，普通用户权限即可运行。</p>
+
+    <h3>某些键偶尔没声音？</h3>
+    <p>正常。程序按虚拟键码判重以保证长按不重复发声；程序每 3 秒自检一次监听状态，意外断开会自动恢复。若长时间异常，关掉再打开「启用」开关即可重置。</p>
+
+    <h3>支持 macOS / Linux 吗？</h3>
+    <p>目前仅 Windows。其他平台需要替换底层监听实现，欢迎提 Issue 或 Pull Request。</p>
+
+    <h3>能二开吗？</h3>
+    <p>可以。代码以 MIT 许可发布，允许修改和分发，只需保留版权声明。内置音效素材遵循各自原始授权，请一并遵守。</p>
+
+    <hr>
+    <p class="doc-end">
+      没找到答案？去 <a href="https://github.com/YOUR_USERNAME/XUComer/issues" target="_blank" rel="noopener">GitHub Issues</a> 提问，
+      或到 <a href="https://github.com/YOUR_USERNAME/XUComer" target="_blank" rel="noopener">仓库</a> 翻翻源码。
+    </p>
+
+  </main>
+</div>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

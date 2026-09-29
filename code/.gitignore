@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.spec
+build/
+build2/
+dist/
+settings.json
+.vscode/
+.idea/
