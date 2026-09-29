@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>留言板 · XUComer</title>
+<meta name="description" content="XUComer 留言板：提问、提建议、报告问题，或只是打个招呼。">
+<meta name="theme-color" content="#0b0d13">
+<link rel="icon" href="assets/img/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/img/icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="doc-body" data-page="comments">
+
+<header class="doc-top">
+  <a class="doc-back" href="index.html">
+    <span aria-hidden="true">←</span> 返回首页
+  </a>
+  <a class="doc-brand" href="index.html">
+    <img class="brand-img" src="assets/img/icon.png" alt="" width="26" height="26">
+    <b>XUComer</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="doc-spacer"></span>
+
+  <div class="pill-group" id="themePicker" role="group" aria-label="同步主题"></div>
+
+  <label class="pick">
+    <span class="pick-label">语言</span>
+    <select id="langPicker" aria-label="界面语言"></select>
+  </label>
+</header>
+
+<main class="comment-page">
+  <h1 data-i18n="ch1">留言板</h1>
+  <p class="doc-lede" data-i18n="chLede">
+    有问题、有想法，或者只是想说声「不错」？都可以在这里留言。
+    评论保存在本仓库的 GitHub Issues 里，公开且永久留存。
+  </p>
+
+  <div class="comment-box">
+    <div id="comments"></div>
+    <p class="comment-note" id="commentNote">
+      评论需要先登录 GitHub 账号。
+    </p>
+  </div>
+</main>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -208,6 +208,13 @@ h1 {
   opacity: .85;
 }
 
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 28px;
+}
+
 .guide-link {
   display: inline-flex;
   align-items: center;
@@ -571,3 +578,45 @@ h1 {
   .pick-label { display: none; }
   .pill-group { flex: 1; overflow-x: auto; }
 }
+
+/* ===================== 留言板 ===================== */
+
+.comment-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 44px 22px 90px;
+}
+.comment-page h1 { margin: 0 0 14px; }
+
+.comment-box {
+  margin-top: 32px;
+}
+
+.comment-box .utterances {
+  max-width: none;
+}
+
+.comment-box iframe {
+  width: 100%;
+  border: 0;
+}
+
+.comment-note {
+  margin: 18px 0 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--fg-dim);
+  opacity: .8;
+}
+
+.comment-warn {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-left: 3px solid #d97706;
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--fg-dim);
+}
+.comment-warn a { color: var(--accent); }

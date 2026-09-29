@@ -52,6 +52,44 @@
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
       m.setAttribute('content', t.panel);
     });
+    syncUtterances(isLight(t.panel));
+  }
+
+  /* ---- 留言板：utterances 加载与主题同步 ---- */
+  const UT_ORIGIN = 'https://utteranc.es';
+  let utFrame = null, utTheme = 'github-dark';
+
+  function syncUtterances(light) {
+    utTheme = light ? 'github-light' : 'github-dark';
+    const f = utFrame || document.querySelector('.utterances-frame');
+    if (f && f.contentWindow) {
+      f.contentWindow.postMessage({ type: 'set-theme', theme: utTheme }, UT_ORIGIN);
+    }
+  }
+
+  function ensureUtterances() {
+    if (utFrame) return;
+    const box = document.getElementById('comments');
+    if (!box || box.dataset.loaded) return;
+    box.dataset.loaded = '1';
+    const s = document.createElement('script');
+    s.src = UT_ORIGIN + '/client.js';
+    s.async = true;
+    s.crossOrigin = 'anonymous';
+    s.setAttribute('repo', 'xazBili/XUComer');
+    s.setAttribute('issue-term', 'pathname');
+    s.setAttribute('label', 'comment');
+    s.setAttribute('theme', utTheme);
+    box.appendChild(s);
+    const poll = setInterval(() => {
+      const f = box.querySelector('.utterances-frame');
+      if (f) {
+        utFrame = f;
+        syncUtterances(utTheme === 'github-light');
+        clearInterval(poll);
+      }
+    }, 400);
+    setTimeout(() => clearInterval(poll), 30000);
   }
 
   function buildThemePicker() {
@@ -122,6 +160,12 @@
       desc: 'XUComer 使用指南：安装、启用、切换音效、导入自定义音效、主题与语言、托盘与自启、常见问题。',
       siteDesc: 'XUComer —— 开源的键盘 / 鼠标按键音效模拟器。MIT 许可，免费，无需联网。',
       padHint: '在这里随便敲几个字试试…',
+      comments: '留言板',
+      ch1: '留言板',
+      chLede: '有问题、有想法，或者只是想说声「不错」？都可以在这里留言。评论保存在本仓库的 GitHub Issues 里，公开且永久留存。',
+      chTitle: '留言板 · XUComer',
+      chDesc: 'XUComer 留言板：提问、提建议、报告问题，或只是打个招呼。',
+      chNote: '评论需要先登录 GitHub 账号。',
       vLinear: 'Linear · 线性轻触', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 闷厚低频'
     },
     en: {
@@ -142,6 +186,12 @@
       desc: 'XUComer user guide: install, enable, switch sounds, import your own, themes and languages, tray and autostart, FAQ.',
       siteDesc: 'XUComer — an open-source keyboard & mouse click-sound simulator. MIT licensed, free, works offline.',
       padHint: 'Type a few words here…',
+      comments: 'Guestbook',
+      ch1: 'Guestbook',
+      chLede: 'Ask a question, share an idea, or just say hi. Comments live in this repository’s GitHub Issues — public and permanent.',
+      chTitle: 'Guestbook · XUComer',
+      chDesc: 'XUComer guestbook: ask questions, share ideas, report issues, or just say hello.',
+      chNote: 'A GitHub account is required to comment.',
       vLinear: 'Linear · Smooth', vTactile: 'Tactile · Bump', vClicky: 'Clicky · Crisp', vThock: 'Thock · Deep & muted'
     },
     zh_TW: {
@@ -162,6 +212,12 @@
       desc: 'XUComer 使用指南：安裝、啟用、切換音效、匯入自訂音效、主題與語言、托盤與自啟、常見問題。',
       siteDesc: 'XUComer —— 開源的鍵盤 / 滑鼠按鍵音效模擬器。MIT 授權，免費，無需連網。',
       padHint: '在這裡隨便敲幾個字試試…',
+      comments: '留言板',
+      ch1: '留言板',
+      chLede: '有問題、有想法，或者只是想說聲「不錯」？都可以在這裡留言。評論保存在本倉庫的 GitHub Issues 裡，公開且永久保存。',
+      chTitle: '留言板 · XUComer',
+      chDesc: 'XUComer 留言板：提問、提供建議、回報問題，或只是打聲招呼。',
+      chNote: '留言前請先登入 GitHub 帳號。',
       vLinear: 'Linear · 線性輕觸', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 悶厚低頻'
     },
     ja: {
@@ -182,6 +238,12 @@
       desc: 'XUComer 使い方ガイド：インストール、有効化、サウンド切替、カスタム音の読み込み、テーマと言語、トレイと自動起動、よくある質問。',
       siteDesc: 'XUComer —— オープンソースのキーボード / マウスクリック音シミュレーター。MIT ライセンス、無料、オフラインで動作。',
       padHint: 'ここに何か打ち込んでみてください…',
+      comments: '掲示板',
+      ch1: '掲示板',
+      chLede: '質問やアイデア、「いいね」の一言でも大歓迎です。コメントは本リポジトリの GitHub Issues に保存され、公開され続けます。',
+      chTitle: '掲示板 · XUComer',
+      chDesc: 'XUComer 掲示板：質問、提案、不具合報告、そして挨拶まで。',
+      chNote: 'コメントするには GitHub アカウントでのログインが必要です。',
       vLinear: 'Linear · リニア', vTactile: 'Tactile · タクタイル', vClicky: 'Clicky · クリッキー', vThock: 'Thock · 低音ソフト'
     },
     ko: {
@@ -202,6 +264,12 @@
       desc: 'XUComer 사용 설명서: 설치, 켜기, 효과음 변경, 커스텀 효과음 가져오기, 테마와 언어, 트레이와 자동 시작, 자주 묻는 질문.',
       siteDesc: 'XUComer —— 오픈 소스 키보드 / 마우스 클릭음 시뮬레이터. MIT 라이센스, 무료, 오프라인 작동.',
       padHint: '여기에 아무거나 입력해 보세요…',
+      comments: '방명록',
+      ch1: '방명록',
+      chLede: '질문, 아이디어, 또는 그냥 인사 한마디라도 환영합니다. 댓글은 이 저장소의 GitHub Issues에 저장되며 공개적으로 유지됩니다.',
+      chTitle: '방명록 · XUComer',
+      chDesc: 'XUComer 방명록: 질문, 제안, 문제 제보, 그리고 인사까지.',
+      chNote: '댓글을 남기려면 GitHub 계정 로그인이 필요합니다.',
       vLinear: 'Linear · 리니어', vTactile: 'Tactile · 택타일', vClicky: 'Clicky · 클리키', vThock: 'Thock · 묵직한 저음'
     },
 
@@ -223,6 +291,12 @@
       desc: 'Guide XUComer : installation, activation, changement de son, import de sons, thèmes et langues, zone de notification et démarrage automatique, FAQ.',
       siteDesc: 'XUComer — un simulateur open source des sons de frappe clavier et souris. Licence MIT, gratuit, sans connexion.',
       padHint: 'Tapez quelques mots ici…',
+      comments: 'Livre d’or',
+      ch1: 'Livre d’or',
+      chLede: 'Une question, une idée, ou simplement un petit mot ? Laissez un commentaire ici. Les messages sont conservés dans les GitHub Issues du dépôt, en public et durablement.',
+      chTitle: 'Livre d’or · XUComer',
+      chDesc: 'Livre d’or XUComer : questions, suggestions, rapports de bugs, ou simples coucou.',
+      chNote: 'Un compte GitHub est nécessaire pour commenter.',
       vLinear: 'Linear · Linéaire', vTactile: 'Tactile · Tactile', vClicky: 'Clicky · Cliquetis', vThock: 'Thock · Grave et sourd'
     },
     de: {
@@ -243,6 +317,12 @@
       desc: 'XUComer-Anleitung: Installation, Aktivierung, Soundwechsel, eigene Sounds importieren, Themes und Sprachen, Tray und Autostart, FAQ.',
       siteDesc: 'XUComer — ein Open-Source-Simulator für Tastatur- und Mausklick-Geräusche. MIT-Lizenz, kostenlos, offline.',
       padHint: 'Tippen Sie hier ein paar Wörter…',
+      comments: 'Gästebuch',
+      ch1: 'Gästebuch',
+      chLede: 'Eine Frage, eine Idee oder einfach ein „Gefällt mir“? Schreib es hier. Kommentare werden in den GitHub Issues dieses Repositorys gespeichert und bleiben öffentlich erhalten.',
+      chTitle: 'Gästebuch · XUComer',
+      chDesc: 'XUComer-Gästebuch: Fragen, Vorschläge, Fehlermeldungen oder einfach ein Hallo.',
+      chNote: 'Zum Kommentieren ist ein GitHub-Konto erforderlich.',
       vLinear: 'Linear · Linear', vTactile: 'Tactile · Taktil', vClicky: 'Clicky · Knackig', vThock: 'Thock · Dumpf und tief'
     },
     es: {
@@ -263,6 +343,12 @@
       desc: 'Guía de XUComer: instalación, activación, cambio de sonido, importación de sonidos, temas e idiomas, bandeja e inicio automático, preguntas frecuentes.',
       siteDesc: 'XUComer — un simulador de código abierto de sonidos de teclado y ratón. Licencia MIT, gratis, sin conexión.',
       padHint: 'Escribe algo aquí…',
+      comments: 'Libro de visitas',
+      ch1: 'Libro de visitas',
+      chLede: '¿Una pregunta, una idea o simplemente quieres saludar? Escribe aquí. Los comentarios se guardan en las GitHub Issues de este repositorio, de forma pública y permanente.',
+      chTitle: 'Libro de visitas · XUComer',
+      chDesc: 'Libro de visitas de XUComer: preguntas, sugerencias, informes de errores o simplemente un hola.',
+      chNote: 'Se necesita una cuenta de GitHub para comentar.',
       vLinear: 'Linear · Lineal', vTactile: 'Tactile · Táctil', vClicky: 'Clicky · Chasquido', vThock: 'Thock · Grave y sordo'
     },
     pt: {
@@ -283,6 +369,12 @@
       desc: 'Guia do XUComer: instalação, ativação, troca de som, importação de sons, temas e idiomas, bandeja e início automático, perguntas frequentes.',
       siteDesc: 'XUComer — um simulador de código aberto de sons de teclado e mouse. Licença MIT, gratuito, sem conexão.',
       padHint: 'Digite algo aqui…',
+      comments: 'Livro de visitas',
+      ch1: 'Livro de visitas',
+      chLede: 'Tem uma dúvida, uma ideia ou só quer dizer olá? Escreva aqui. Os comentários ficam guardados nas GitHub Issues deste repositório, públicos e permanentes.',
+      chTitle: 'Livro de visitas · XUComer',
+      chDesc: 'Livro de visitas do XUComer: perguntas, sugestões, relatórios de problemas ou só um alô.',
+      chNote: 'É preciso ter uma conta GitHub para comentar.',
       vLinear: 'Linear · Linear', vTactile: 'Tactile · Tátil', vClicky: 'Clicky · Estalo', vThock: 'Thock · Grave e abafado'
     },
     ru: {
@@ -303,6 +395,12 @@
       desc: 'Руководство XUComer: установка, включение, смена звука, импорт своих звуков, темы и языки, трей и автозапуск, частые вопросы.',
       siteDesc: 'XUComer — симулятор звуков клавиатуры и мыши с открытым исходным кодом. Лицензия MIT, бесплатно, без интернета.',
       padHint: 'Наберите здесь пару слов…',
+      comments: 'Гостевая книга',
+      ch1: 'Гостевая книга',
+      chLede: 'Вопрос, идея или просто хотите сказать «класс»? Оставляйте сообщение здесь. Комментарии хранятся в GitHub Issues этого репозитория — открыто и постоянно.',
+      chTitle: 'Гостевая книга · XUComer',
+      chDesc: 'Гостевая книга XUComer: вопросы, предложения, сообщения об ошибках или просто приветствие.',
+      chNote: 'Для комментария нужен аккаунт GitHub.',
       vLinear: 'Linear · Линейный', vTactile: 'Tactile · Тактильный', vClicky: 'Clicky · Щелчок', vThock: 'Thock · Глухой низкий'
     },
     it: {
@@ -323,6 +421,12 @@
       desc: 'Guida di XUComer: installazione, attivazione, cambio suono, importazione suoni, temi e lingue, area di notifica e avvio automatico, domande frequenti.',
       siteDesc: 'XUComer — un simulatore open source dei suoni di tastiera e mouse. Licenza MIT, gratuito, senza connessione.',
       padHint: 'Scrivi qualcosa qui…',
+      comments: 'Libro degli ospiti',
+      ch1: 'Libro degli ospiti',
+      chLede: 'Una domanda, un’idea o semplicemente un saluto? Scrivi qui. I commenti vengono salvati nelle GitHub Issues di questo repository, pubblicamente e in modo permanente.',
+      chTitle: 'Libro degli ospiti · XUComer',
+      chDesc: 'Libro degli ospiti di XUComer: domande, suggerimenti, segnalazioni o semplici saluti.',
+      chNote: 'Per commentare serve un account GitHub.',
       vLinear: 'Linear · Lineare', vTactile: 'Tactile · Tattile', vClicky: 'Clicky · Scatto', vThock: 'Thock · Cupo e profondo'
     },
     nl: {
@@ -343,6 +447,12 @@
       desc: 'XUComer-handleiding: installeren, inschakelen, geluid wisselen, eigen geluiden importeren, thema’s en talen, systeemvak en autostart, veelgestelde vragen.',
       siteDesc: 'XUComer — een open-source simulator voor toetsenbord- en muisklikgeluiden. MIT-licentie, gratis, offline.',
       padHint: 'Typ hier een paar woorden…',
+      comments: 'Gastenboek',
+      ch1: 'Gastenboek',
+      chLede: 'Een vraag, een idee of gewoon even hallo zeggen? Laat hier een berichtje achter. Reacties worden opgeslagen in de GitHub Issues van deze repository, openbaar en blijvend.',
+      chTitle: 'Gastenboek · XUComer',
+      chDesc: 'XUComer-gastenboek: vragen, suggesties, bugmeldingen of gewoon een hallo.',
+      chNote: 'Je hebt een GitHub-account nodig om te reageren.',
       vLinear: 'Linear · Lineair', vTactile: 'Tactile · Tastbaar', vClicky: 'Clicky · Klikkend', vThock: 'Thock · Dof en laag'
     },
     pl: {
@@ -363,6 +473,12 @@
       desc: 'Przewodnik XUComer: instalacja, włączanie, zmiana dźwięku, import własnych dźwięków, motywy i języki, tacka i autostart, najczęstsze pytania.',
       siteDesc: 'XUComer — otwarty symulator dźwięków klawiatury i myszy. Licencja MIT, darmowy, działa offline.',
       padHint: 'Wpisz tutaj kilka słów…',
+      comments: 'Księga gości',
+      ch1: 'Księga gości',
+      chLede: 'Pytanie, pomysł czy po prostu chcesz powiedzieć „super”? Napisz tutaj. Komentarze są zapisywane w GitHub Issues tego repozytorium — publicznie i na stałe.',
+      chTitle: 'Księga gości · XUComer',
+      chDesc: 'Księga gości XUComer: pytania, sugestie, zgłoszenia błędów lub zwykłe powitanie.',
+      chNote: 'Do komentowania potrzebne jest konto GitHub.',
       vLinear: 'Linear · Liniowy', vTactile: 'Tactile · Wyczuwalny', vClicky: 'Clicky · Klikający', vThock: 'Thock · Głuchy i niski'
     },
     tr: {
@@ -383,6 +499,12 @@
       desc: 'XUComer kullanım kılavuzu: kurulum, etkinleştirme, ses değiştirme, kendi sesini içe aktarma, temalar ve diller, tepsi ve açılışta başlatma, sık sorulanlar.',
       siteDesc: 'XUComer — açık kaynaklı klavye / fare tıklama sesi simülatörü. MIT lisansı, ücretsiz, çevrimdışı çalışır.',
       padHint: 'Buraya birkaç kelime yazın…',
+      comments: 'Ziyaretçi defteri',
+      ch1: 'Ziyaretçi defteri',
+      chLede: 'Bir sorunuz, fikriniz var ya da sadece merhaba mı demek istiyorsunuz? Buraya yazın. Yorumlar bu deponun GitHub Issues bölümünde saklanır; herkese açık ve kalıcıdır.',
+      chTitle: 'Ziyaretçi defteri · XUComer',
+      chDesc: 'XUComer ziyaretçi defteri: sorular, öneriler, hata bildirimleri ya da sadece bir merhaba.',
+      chNote: 'Yorum yapmak için GitHub hesabı gereklidir.',
       vLinear: 'Linear · Doğrusal', vTactile: 'Tactile · Dokunsal', vClicky: 'Clicky · Tıkırtılı', vThock: 'Thock · Boğuk ve derin'
     },
     ar: {
@@ -403,6 +525,12 @@
       desc: 'دليل XUComer: التثبيت، التشغيل، تغيير الصوت، استيراد الأصوات المخصصة، السمات واللغات، الدرج والتشغيل التلقائي، الأسئلة الشائعة.',
       siteDesc: 'XUComer — محاكٍ مفتوح المصدر لأصوات لوحة المفاتيح والفأرة. ترخيص MIT، مجانٍي، يعمل دون اتصال.',
       padHint: 'اكتب بضع كلمات هنا…',
+      comments: 'سجل الزوار',
+      ch1: 'سجل الزوار',
+      chLede: 'هل لديك سؤال أو فكرة، أم تريد فقط أن تقول «رائع»؟ اترك تعليقًا هنا. تُحفظ التعليقات في GitHub Issues لهذا المستودع، علنًا وبشكل دائم.',
+      chTitle: 'سجل الزوار · XUComer',
+      chDesc: 'سجل زوار XUComer: الأسئلة والاقتراحات وبلاغات الأخطاء، أو مجرد تحية.',
+      chNote: 'يلزم وجود حساب GitHub للتعليق.',
       vLinear: 'Linear · خطي', vTactile: 'Tactile · ملموس', vClicky: 'Clicky · طقطقة', vThock: 'Thock · عميق ومكتوم'
     },
     th: {
@@ -423,6 +551,12 @@
       desc: 'คู่มือ XUComer: การติดตั้ง, การเปิดใช้งาน, การเปลี่ยนเสียง, การนำเข้าเสียงเอง, ธีมและภาษา, เทรย์และเริ่มอัตโนมัติ, คำถามที่พบบ่อย',
       siteDesc: 'XUComer — โปรแกรมจำลองเสียงแป้นพิมพ์และเมาส์แบบโอเพนซอร์ส ใบอนุญาต MIT ฟรี ทำงานได้โดยไม่ต้องต่อเน็ต',
       padHint: 'พิมพ์ข้อความที่นี่…',
+      comments: 'สมุดเยี่ยม',
+      ch1: 'สมุดเยี่ยม',
+      chLede: 'มีคำถาม มีไอเดีย หรือแค่อยากทักทาย? เขียนไว้ที่นี่ได้เลย ความเห็นจะถูกเก็บใน GitHub Issues ของรีโปนี้ แบบสาธารณะและถาวร',
+      chTitle: 'สมุดเยี่ยม · XUComer',
+      chDesc: 'สมุดเยี่ยม XUComer: คำถาม ข้อเสนอแนะ แจ้งปัญหา หรือแค่ทักทาย',
+      chNote: 'ต้องเข้าสู่ระบบ GitHub จึงจะแสดงความเห็นได้',
       vLinear: 'Linear · เส้นตรงนุ่มนวล', vTactile: 'Tactile · มีจังหวะ', vClicky: 'Clicky · กรอบใส', vThock: 'Thock · ทุ้มหนา'
     },
     vi: {
@@ -443,6 +577,12 @@
       desc: 'Hướng dẫn XUComer: cài đặt, bật tắt, đổi âm thanh, nhập âm thanh riêng, giao diện và ngôn ngữ, khay hệ thống và khởi động cùng Windows, câu hỏi thường gặp.',
       siteDesc: 'XUComer — trình mô phỏng âm thanh phím / chuột mã nguồn mở. Giấy phép MIT, miễn phí, không cần mạng.',
       padHint: 'Gõ vài từ ở đây…',
+      comments: 'Sổ lưu bút',
+      ch1: 'Sổ lưu bút',
+      chLede: 'Có câu hỏi, ý tưởng, hay chỉ muốn nói một lời khen? Cứ để lại lời nhắn tại đây. Bình luận được lưu trong GitHub Issues của kho này, công khai và lâu dài.',
+      chTitle: 'Sổ lưu bút · XUComer',
+      chDesc: 'Sổ lưu bút XUComer: hỏi đáp, góp ý, báo lỗi, hay chỉ là một lời chào.',
+      chNote: 'Cần có tài khoản GitHub để bình luận.',
       vLinear: 'Linear · Tuyến tính', vTactile: 'Tactile · Có nấc', vClicky: 'Clicky · Giòn', vThock: 'Thock · Trầm đục'
     },
     id: {
@@ -463,6 +603,12 @@
       desc: 'Panduan XUComer: pemasangan, pengaktifan, ganti suara, impor suara sendiri, tema dan bahasa, tray dan mulai otomatis, pertanyaan umum.',
       siteDesc: 'XUComer — simulator suara ketikan keyboard / klik mouse open source. Lisensi MIT, gratis, tanpa koneksi.',
       padHint: 'Ketik beberapa kata di sini…',
+      comments: 'Buku tamu',
+      ch1: 'Buku tamu',
+      chLede: 'Punya pertanyaan, ide, atau sekadar ingin menyapa? Tinggalkan pesan di sini. Komentar disimpan di GitHub Issues repositori ini, publik dan permanen.',
+      chTitle: 'Buku tamu · XUComer',
+      chDesc: 'Buku tamu XUComer: bertanya, memberi saran, melaporkan masalah, atau sekadar menyapa.',
+      chNote: 'Diperlukan akun GitHub untuk berkomentar.',
       vLinear: 'Linear · Linier', vTactile: 'Tactile · Berbuku', vClicky: 'Clicky · Klik tajam', vThock: 'Thock · Berat dan rendah'
     }
   };
@@ -502,7 +648,7 @@
     const { pack, resolved } = tFor(code);
     root.lang = resolved.replace('_', '-');
     root.dir = resolved === 'ar' ? 'rtl' : 'ltr';
-    const isDoc = !!document.querySelector('.doc-main');
+    const page = document.body.dataset.page || (document.querySelector('.doc-main') ? 'guide' : 'home');
 
     const setText = (sel, val) => { const el = document.querySelector(sel); if (el && val != null) el.textContent = val; };
     const back = document.querySelector('.doc-back');
@@ -549,6 +695,9 @@
     setText('#upOnLabel', pack.upOn);
     setText('[data-i18n="x64Size"]', pack.x64);
     setText('[data-i18n="x86Size"]', pack.x86);
+    setText('[data-i18n="ch1"]', pack.ch1);
+    setText('[data-i18n="chLede"]', pack.chLede);
+    setText('#commentNote', pack.chNote);
 
     document.querySelectorAll('option[data-voice]').forEach(o => {
       const k = o.dataset.voice;
@@ -558,14 +707,18 @@
     if (padEl) padEl.setAttribute('placeholder', pack.padHint);
 
     document.querySelectorAll('meta[name="description"]').forEach(m => {
-      m.setAttribute('content', isDoc ? pack.desc : pack.siteDesc);
+      m.setAttribute('content',
+        page === 'guide' ? pack.desc : page === 'comments' ? pack.chDesc : pack.siteDesc);
     });
-    if (isDoc) document.title = pack.docTitle;
+    if (page === 'guide') document.title = pack.docTitle;
+    else if (page === 'comments') document.title = pack.chTitle;
 
     document.querySelectorAll('.pill').forEach(p => {
       const th = THEMES.find(x => x.id === p.dataset.id);
       if (th) p.title = th.zh + ' · ' + th.en;
     });
+
+    if (page === 'comments') ensureUtterances();
 
     store.set(LANG_KEY, code);
   }
