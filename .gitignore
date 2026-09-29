@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+build/
+build2/
+dist/
+*.spec
+settings.json
+.workbuddy/
