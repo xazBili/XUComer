@@ -23,7 +23,7 @@ gh repo create XUComer --public --source=. --remote=origin --push
 ## 4. 开启 Pages
 
 ```bash
-gh api -X POST repos/{owner}/{repo}/pages -f source[branch]=master -f source[path]=/web
+gh api -X POST repos/{owner}/{repo}/pages -f source[branch]=master -f source[path]=/docs
 ```
 
 ## 5. 发 Release
