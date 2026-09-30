@@ -471,20 +471,14 @@
     }
 
     showMsg(t('delOk'), 'ok');
+    closeMenus();
+    disarmAll();
 
-    if (li.classList.contains('reply')) {
-      total = Math.max(0, total - 1);
-      renderCount();
-      renderPager();
-      reportHeight();
-      return;
+    if (!li.classList.contains('reply')) {
+      const replies = Array.prototype.slice.call(li.querySelectorAll('.replies > li.reply'));
+      replies.forEach(r => dropMine(r.dataset.id));
     }
-    const replies = Array.prototype.slice.call(li.querySelectorAll('.replies > li.reply'));
-    replies.forEach(r => dropMine(r.dataset.id));
     dropMine(id);
-    total = Math.max(0, total - 1 - replies.length);
-    li.remove();
-    renderCount();
     load();
   }
 
