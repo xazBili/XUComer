@@ -592,7 +592,7 @@ h1 {
   margin-top: 32px;
 }
 
-.comment-box .utterances {
+.comment-box .giscus {
   max-width: none;
 }
 
