@@ -52,70 +52,69 @@
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
       m.setAttribute('content', t.panel);
     });
-    gcTheme = isLight(t.panel) ? 'light' : 'dark';
-    syncGiscus();
+    currentTheme = t;
+    syncGuestbook();
   }
 
-  /* ---- 留言板：giscus 加载与主题同步 ---- */
-  const GC_ORIGIN = 'https://giscus.app';
-  const GC_REPO = 'xazBili/XUComer';
-  const GC_REPO_ID = 'R_kgDOUyjUzA';
-  const GC_CATEGORY = 'General';
-  const GC_CATEGORY_ID = 'DIC_kwDOUyjUzM4DGsMu';
-  let gcFrame = null, gcTheme = 'dark';
+  /* ---- 留言板：内嵌独立应用，靠 postMessage 同步主题与语言 ---- */
+  const GB_ORIGIN = 'https://xucomer-guestbook.app.workbuddy.host';
+  let gbFrame = null;
+  let gbLang = 'zh_CN';
+  let currentTheme = null;
 
-  function syncGiscus() {
-    const f = gcFrame || document.querySelector('iframe.giscus-frame');
-    if (f && f.contentWindow) {
-      f.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: gcTheme } } },
-        GC_ORIGIN
-      );
-    }
+  function gbTheme(t) {
+    return {
+      light: isLight(t.panel) ? '1' : '0',
+      panel: t.panel,
+      card: t.card,
+      input: t.input,
+      accent: t.accent,
+      text: t.text,
+      dim: t.sub,
+      line: t.line
+    };
   }
 
-  function ensureGiscus(lang) {
-    const code = (lang || 'en').replace('_', '-');
+  function createGuestbookFrame() {
     const box = document.getElementById('comments');
-    if (!box) return;
+    if (!box || gbFrame || !currentTheme) return;
 
-    /* 换语言需要重建，giscus 的界面语言在加载时读死 */
-    if (box.dataset.lang && box.dataset.lang !== code) {
-      box.innerHTML = '';
-      box.removeAttribute('data-loaded');
-      gcFrame = null;
-    }
-    if (box.dataset.loaded) return;
-    box.dataset.loaded = '1';
-    box.dataset.lang = code;
+    const q = new URLSearchParams(gbTheme(currentTheme));
+    q.set('lang', gbLang);
 
-    const s = document.createElement('script');
-    s.src = GC_ORIGIN + '/client.js';
-    s.async = true;
-    s.crossOrigin = 'anonymous';
-    s.setAttribute('data-repo', GC_REPO);
-    s.setAttribute('data-repo-id', GC_REPO_ID);
-    s.setAttribute('data-category', GC_CATEGORY);
-    s.setAttribute('data-category-id', GC_CATEGORY_ID);
-    s.setAttribute('data-mapping', 'pathname');
-    s.setAttribute('data-strict', '0');
-    s.setAttribute('data-reactions-enabled', '1');
-    s.setAttribute('data-emit-metadata', '0');
-    s.setAttribute('data-input-position', 'bottom');
-    s.setAttribute('data-theme', gcTheme);
-    s.setAttribute('data-lang', code);
-    box.appendChild(s);
-
-    const poll = setInterval(() => {
-      const f = box.querySelector('iframe.giscus-frame');
-      if (f) {
-        gcFrame = f;
-        syncGiscus();
-        clearInterval(poll);
-      }
-    }, 400);
-    setTimeout(() => clearInterval(poll), 30000);
+    const f = document.createElement('iframe');
+    f.className = 'gb-frame';
+    f.title = 'Guestbook';
+    f.loading = 'lazy';
+    f.setAttribute('scrolling', 'no');
+    f.src = GB_ORIGIN + '/?' + q.toString();
+    f.addEventListener('load', () => { syncGuestbook(); });
+    box.appendChild(f);
+    gbFrame = f;
   }
+
+  function syncGuestbook() {
+    if (!currentTheme || !document.getElementById('comments')) return;
+    createGuestbookFrame();
+    if (!gbFrame || !gbFrame.contentWindow) return;
+    gbFrame.contentWindow.postMessage(
+      { gb: { theme: gbTheme(currentTheme), lang: gbLang } },
+      GB_ORIGIN
+    );
+  }
+
+  function ensureGuestbook(lang) {
+    gbLang = lang || 'zh_CN';
+    syncGuestbook();
+  }
+
+  window.addEventListener('message', e => {
+    if (e.origin !== GB_ORIGIN) return;
+    const d = e.data;
+    if (!d || !d.gb || !d.gb.height || !gbFrame) return;
+    const h = Math.max(320, Math.min(6000, Math.round(d.gb.height)));
+    gbFrame.style.height = h + 'px';
+  });
 
   function buildThemePicker() {
     const box = document.getElementById('themePicker');
@@ -215,10 +214,10 @@
       padHint: '在这里随便敲几个字试试…',
       comments: '留言板',
       ch1: '留言板',
-      chLede: '有问题、有想法，或者只是想说声「不错」？都可以在这里留言。评论保存在本仓库的 GitHub Discussions 里，公开且永久留存。',
+      chLede: '有问题、有想法，或者只是想说声「不错」？都可以在这里留言。留言保存在云端，公开可见，也不需要注册账号。',
       chTitle: '留言板 · XUComer',
       chDesc: 'XUComer 留言板：提问、提建议、报告问题，或只是打个招呼。',
-      chNote: '评论需要先登录 GitHub 账号。',
+      chNote: '直接写就行，不用登录，发表后立刻显示。',
       vLinear: 'Linear · 线性轻触', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 闷厚低频'
     },
     en: {
@@ -241,10 +240,10 @@
       padHint: 'Type a few words here…',
       comments: 'Guestbook',
       ch1: 'Guestbook',
-      chLede: 'Ask a question, share an idea, or just say hi. Comments live in this repository’s GitHub Discussions — public and permanent.',
+      chLede: '有問題、有想法，或者只是想說聲「不錯」？都可以在這裡留言。留言保存在雲端，公開可見，也不需要註冊帳號。',
       chTitle: 'Guestbook · XUComer',
       chDesc: 'XUComer guestbook: ask questions, share ideas, report issues, or just say hello.',
-      chNote: 'A GitHub account is required to comment.',
+      chNote: '直接寫就行，不用登入，發表後立刻顯示。',
       vLinear: 'Linear · Smooth', vTactile: 'Tactile · Bump', vClicky: 'Clicky · Crisp', vThock: 'Thock · Deep & muted'
     },
     zh_TW: {
@@ -267,10 +266,10 @@
       padHint: '在這裡隨便敲幾個字試試…',
       comments: '留言板',
       ch1: '留言板',
-      chLede: '有問題、有想法，或者只是想說聲「不錯」？都可以在這裡留言。評論保存在本倉庫的 GitHub Discussions 裡，公開且永久保存。',
+      chLede: 'Ask a question, share an idea, or just say hi. Comments are stored in the cloud and visible to everyone — no account needed.',
       chTitle: '留言板 · XUComer',
       chDesc: 'XUComer 留言板：提問、提供建議、回報問題，或只是打聲招呼。',
-      chNote: '留言前請先登入 GitHub 帳號。',
+      chNote: 'Just write and post — no sign-in required.',
       vLinear: 'Linear · 線性輕觸', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 悶厚低頻'
     },
     ja: {
@@ -293,10 +292,10 @@
       padHint: 'ここに何か打ち込んでみてください…',
       comments: '掲示板',
       ch1: '掲示板',
-      chLede: '質問やアイデア、「いいね」の一言でも大歓迎です。コメントは本リポジトリの GitHub Discussions に保存され、公開され続けます。',
+      chLede: '質問やアイデア、「いいね」の一言でも大歓迎です。コメントはクラウドに保存され、誰でも見られます。アカウント登録は不要です。',
       chTitle: '掲示板 · XUComer',
       chDesc: 'XUComer 掲示板：質問、提案、不具合報告、そして挨拶まで。',
-      chNote: 'コメントするには GitHub アカウントでのログインが必要です。',
+      chNote: 'ログイン不要。書いたらそのまま投稿できます。',
       vLinear: 'Linear · リニア', vTactile: 'Tactile · タクタイル', vClicky: 'Clicky · クリッキー', vThock: 'Thock · 低音ソフト'
     },
     ko: {
@@ -319,10 +318,10 @@
       padHint: '여기에 아무거나 입력해 보세요…',
       comments: '방명록',
       ch1: '방명록',
-      chLede: '질문, 아이디어, 또는 그냥 인사 한마디라도 환영합니다. 댓글은 이 저장소의 GitHub Discussions에 저장되며 공개적으로 유지됩니다.',
+      chLede: '질문, 아이디어, 또는 그냥 인사 한마디라도 환영합니다. 댓글은 클라우드에 저장되어 누구나 볼 수 있고, 계정은 필요 없습니다.',
       chTitle: '방명록 · XUComer',
       chDesc: 'XUComer 방명록: 질문, 제안, 문제 제보, 그리고 인사까지.',
-      chNote: '댓글을 남기려면 GitHub 계정 로그인이 필요합니다.',
+      chNote: '로그인 없이 바로 작성하고 등록할 수 있습니다.',
       vLinear: 'Linear · 리니어', vTactile: 'Tactile · 택타일', vClicky: 'Clicky · 클리키', vThock: 'Thock · 묵직한 저음'
     },
 
@@ -346,10 +345,10 @@
       padHint: 'Tapez quelques mots ici…',
       comments: 'Livre d’or',
       ch1: 'Livre d’or',
-      chLede: 'Une question, une idée, ou simplement un petit mot ? Laissez un commentaire ici. Les messages sont conservés dans les GitHub Discussions du dépôt, en public et durablement.',
+      chLede: 'Une question, une idée, ou simplement un petit mot ? Laissez un message ici. Les commentaires sont conservés dans le cloud, visibles par tous — aucun compte requis.',
       chTitle: 'Livre d’or · XUComer',
       chDesc: 'Livre d’or XUComer : questions, suggestions, rapports de bugs, ou simples coucou.',
-      chNote: 'Un compte GitHub est nécessaire pour commenter.',
+      chNote: 'Écrivez et publiez directement — aucune connexion requise.',
       vLinear: 'Linear · Linéaire', vTactile: 'Tactile · Tactile', vClicky: 'Clicky · Cliquetis', vThock: 'Thock · Grave et sourd'
     },
     de: {
@@ -372,10 +371,10 @@
       padHint: 'Tippen Sie hier ein paar Wörter…',
       comments: 'Gästebuch',
       ch1: 'Gästebuch',
-      chLede: 'Eine Frage, eine Idee oder einfach ein „Gefällt mir“? Schreib es hier. Kommentare werden in den GitHub Discussions dieses Repositorys gespeichert und bleiben öffentlich erhalten.',
+      chLede: 'Eine Frage, eine Idee oder einfach ein „Gefällt mir“? Schreib es hier. Kommentare werden in der Cloud gespeichert und sind für alle sichtbar — kein Konto nötig.',
       chTitle: 'Gästebuch · XUComer',
       chDesc: 'XUComer-Gästebuch: Fragen, Vorschläge, Fehlermeldungen oder einfach ein Hallo.',
-      chNote: 'Zum Kommentieren ist ein GitHub-Konto erforderlich.',
+      chNote: 'Einfach schreiben und absenden — keine Anmeldung nötig.',
       vLinear: 'Linear · Linear', vTactile: 'Tactile · Taktil', vClicky: 'Clicky · Knackig', vThock: 'Thock · Dumpf und tief'
     },
     es: {
@@ -398,10 +397,10 @@
       padHint: 'Escribe algo aquí…',
       comments: 'Libro de visitas',
       ch1: 'Libro de visitas',
-      chLede: '¿Una pregunta, una idea o simplemente quieres saludar? Escribe aquí. Los comentarios se guardan en las GitHub Discussions de este repositorio, de forma pública y permanente.',
+      chLede: '¿Una pregunta, una idea o simplemente quieres saludar? Escribe aquí. Los comentarios se guardan en la nube, visibles para todos, sin necesidad de cuenta.',
       chTitle: 'Libro de visitas · XUComer',
       chDesc: 'Libro de visitas de XUComer: preguntas, sugerencias, informes de errores o simplemente un hola.',
-      chNote: 'Se necesita una cuenta de GitHub para comentar.',
+      chNote: 'Escribe y publica directamente: no hace falta iniciar sesión.',
       vLinear: 'Linear · Lineal', vTactile: 'Tactile · Táctil', vClicky: 'Clicky · Chasquido', vThock: 'Thock · Grave y sordo'
     },
     pt: {
@@ -424,10 +423,10 @@
       padHint: 'Digite algo aqui…',
       comments: 'Livro de visitas',
       ch1: 'Livro de visitas',
-      chLede: 'Tem uma dúvida, uma ideia ou só quer dizer olá? Escreva aqui. Os comentários ficam guardados nas GitHub Discussions deste repositório, públicos e permanentes.',
+      chLede: 'Tem uma dúvida, uma ideia ou só quer dizer olá? Escreva aqui. Os comentários ficam guardados na nuvem, visíveis para todos — não precisa de conta.',
       chTitle: 'Livro de visitas · XUComer',
       chDesc: 'Livro de visitas do XUComer: perguntas, sugestões, relatórios de problemas ou só um alô.',
-      chNote: 'É preciso ter uma conta GitHub para comentar.',
+      chNote: 'Escreva e publique direto — sem login.',
       vLinear: 'Linear · Linear', vTactile: 'Tactile · Tátil', vClicky: 'Clicky · Estalo', vThock: 'Thock · Grave e abafado'
     },
     ru: {
@@ -450,10 +449,10 @@
       padHint: 'Наберите здесь пару слов…',
       comments: 'Гостевая книга',
       ch1: 'Гостевая книга',
-      chLede: 'Вопрос, идея или просто хотите сказать «класс»? Оставляйте сообщение здесь. Комментарии хранятся в GitHub Discussions этого репозитория — открыто и постоянно.',
+      chLede: 'Вопрос, идея или просто хотите сказать «класс»? Оставляйте сообщение здесь. Комментарии хранятся в облаке и видны всем — аккаунт не нужен.',
       chTitle: 'Гостевая книга · XUComer',
       chDesc: 'Гостевая книга XUComer: вопросы, предложения, сообщения об ошибках или просто приветствие.',
-      chNote: 'Для комментария нужен аккаунт GitHub.',
+      chNote: 'Просто напишите и отправьте — вход не нужен.',
       vLinear: 'Linear · Линейный', vTactile: 'Tactile · Тактильный', vClicky: 'Clicky · Щелчок', vThock: 'Thock · Глухой низкий'
     },
     it: {
@@ -476,10 +475,10 @@
       padHint: 'Scrivi qualcosa qui…',
       comments: 'Libro degli ospiti',
       ch1: 'Libro degli ospiti',
-      chLede: 'Una domanda, un’idea o semplicemente un saluto? Scrivi qui. I commenti vengono salvati nelle GitHub Discussions di questo repository, pubblicamente e in modo permanente.',
+      chLede: 'Una domanda, un’idea o semplicemente un saluto? Scrivi qui. I commenti vengono salvati nel cloud, visibili a tutti — nessun account richiesto.',
       chTitle: 'Libro degli ospiti · XUComer',
       chDesc: 'Libro degli ospiti di XUComer: domande, suggerimenti, segnalazioni o semplici saluti.',
-      chNote: 'Per commentare serve un account GitHub.',
+      chNote: 'Scrivi e pubblica subito: nessun accesso richiesto.',
       vLinear: 'Linear · Lineare', vTactile: 'Tactile · Tattile', vClicky: 'Clicky · Scatto', vThock: 'Thock · Cupo e profondo'
     },
     nl: {
@@ -502,10 +501,10 @@
       padHint: 'Typ hier een paar woorden…',
       comments: 'Gastenboek',
       ch1: 'Gastenboek',
-      chLede: 'Een vraag, een idee of gewoon even hallo zeggen? Laat hier een berichtje achter. Reacties worden opgeslagen in de GitHub Discussions van deze repository, openbaar en blijvend.',
+      chLede: 'Een vraag, een idee of gewoon even hallo zeggen? Laat hier een berichtje achter. Reacties staan in de cloud, voor iedereen zichtbaar — geen account nodig.',
       chTitle: 'Gastenboek · XUComer',
       chDesc: 'XUComer-gastenboek: vragen, suggesties, bugmeldingen of gewoon een hallo.',
-      chNote: 'Je hebt een GitHub-account nodig om te reageren.',
+      chNote: 'Schrijf en plaats direct — geen inloggen nodig.',
       vLinear: 'Linear · Lineair', vTactile: 'Tactile · Tastbaar', vClicky: 'Clicky · Klikkend', vThock: 'Thock · Dof en laag'
     },
     pl: {
@@ -528,10 +527,10 @@
       padHint: 'Wpisz tutaj kilka słów…',
       comments: 'Księga gości',
       ch1: 'Księga gości',
-      chLede: 'Pytanie, pomysł czy po prostu chcesz powiedzieć „super”? Napisz tutaj. Komentarze są zapisywane w GitHub Discussions tego repozytorium — publicznie i na stałe.',
+      chLede: 'Pytanie, pomysł czy po prostu chcesz powiedzieć „super”? Napisz tutaj. Komentarze są przechowywane w chmurze i widoczne dla wszystkich — konto nie jest potrzebne.',
       chTitle: 'Księga gości · XUComer',
       chDesc: 'Księga gości XUComer: pytania, sugestie, zgłoszenia błędów lub zwykłe powitanie.',
-      chNote: 'Do komentowania potrzebne jest konto GitHub.',
+      chNote: 'Napisz i opublikuj od razu — bez logowania.',
       vLinear: 'Linear · Liniowy', vTactile: 'Tactile · Wyczuwalny', vClicky: 'Clicky · Klikający', vThock: 'Thock · Głuchy i niski'
     },
     tr: {
@@ -554,10 +553,10 @@
       padHint: 'Buraya birkaç kelime yazın…',
       comments: 'Ziyaretçi defteri',
       ch1: 'Ziyaretçi defteri',
-      chLede: 'Bir sorunuz, fikriniz var ya da sadece merhaba mı demek istiyorsunuz? Buraya yazın. Yorumlar bu deponun GitHub Discussions bölümünde saklanır; herkese açık ve kalıcıdır.',
+      chLede: 'Bir sorunuz, fikriniz var ya da sadece merhaba mı demek istiyorsunuz? Buraya yazın. Yorumlar bulutta saklanır ve herkese açıktır — hesap gerekmez.',
       chTitle: 'Ziyaretçi defteri · XUComer',
       chDesc: 'XUComer ziyaretçi defteri: sorular, öneriler, hata bildirimleri ya da sadece bir merhaba.',
-      chNote: 'Yorum yapmak için GitHub hesabı gereklidir.',
+      chNote: 'Yaz ve doğrudan gönder — giriş gerekmez.',
       vLinear: 'Linear · Doğrusal', vTactile: 'Tactile · Dokunsal', vClicky: 'Clicky · Tıkırtılı', vThock: 'Thock · Boğuk ve derin'
     },
     ar: {
@@ -580,10 +579,10 @@
       padHint: 'اكتب بضع كلمات هنا…',
       comments: 'سجل الزوار',
       ch1: 'سجل الزوار',
-      chLede: 'هل لديك سؤال أو فكرة، أم تريد فقط أن تقول «رائع»؟ اترك تعليقًا هنا. تُحفظ التعليقات في GitHub Discussions لهذا المستودع، علنًا وبشكل دائم.',
+      chLede: 'هل لديك سؤال أو فكرة، أم تريد فقط أن تقول «رائع»؟ اترك تعليقًا هنا. تُحفظ التعليقات في السحابة وتظهر للجميع — دون حاجة إلى حساب.',
       chTitle: 'سجل الزوار · XUComer',
       chDesc: 'سجل زوار XUComer: الأسئلة والاقتراحات وبلاغات الأخطاء، أو مجرد تحية.',
-      chNote: 'يلزم وجود حساب GitHub للتعليق.',
+      chNote: 'اكتب وانشر مباشرة — لا حاجة لتسجيل الدخول.',
       vLinear: 'Linear · خطي', vTactile: 'Tactile · ملموس', vClicky: 'Clicky · طقطقة', vThock: 'Thock · عميق ومكتوم'
     },
     th: {
@@ -606,10 +605,10 @@
       padHint: 'พิมพ์ข้อความที่นี่…',
       comments: 'สมุดเยี่ยม',
       ch1: 'สมุดเยี่ยม',
-      chLede: 'มีคำถาม มีไอเดีย หรือแค่อยากทักทาย? เขียนไว้ที่นี่ได้เลย ความเห็นจะถูกเก็บใน GitHub Discussions ของรีโปนี้ แบบสาธารณะและถาวร',
+      chLede: 'มีคำถาม มีไอเดีย หรือแค่ทักทาย? เขียนไว้ที่นี่ได้เลย ความเห็นจะถูกเก็บไว้บนคลาวด์ ใครก็เห็นได้ และไม่ต้องมีบัญชี',
       chTitle: 'สมุดเยี่ยม · XUComer',
       chDesc: 'สมุดเยี่ยม XUComer: คำถาม ข้อเสนอแนะ แจ้งปัญหา หรือแค่ทักทาย',
-      chNote: 'ต้องเข้าสู่ระบบ GitHub จึงจะแสดงความเห็นได้',
+      chNote: 'เขียนแล้วโพสต์ได้เลย ไม่ต้องเข้าสู่ระบบ',
       vLinear: 'Linear · เส้นตรงนุ่มนวล', vTactile: 'Tactile · มีจังหวะ', vClicky: 'Clicky · กรอบใส', vThock: 'Thock · ทุ้มหนา'
     },
     vi: {
@@ -632,10 +631,10 @@
       padHint: 'Gõ vài từ ở đây…',
       comments: 'Sổ lưu bút',
       ch1: 'Sổ lưu bút',
-      chLede: 'Có câu hỏi, ý tưởng, hay chỉ muốn nói một lời khen? Cứ để lại lời nhắn tại đây. Bình luận được lưu trong GitHub Discussions của kho này, công khai và lâu dài.',
+      chLede: 'Có câu hỏi, ý tưởng, hay chỉ muốn nói một lời khen? Cứ để lại lời nhắn tại đây. Bình luận được lưu trên đám mây, ai cũng xem được và không cần tài khoản.',
       chTitle: 'Sổ lưu bút · XUComer',
       chDesc: 'Sổ lưu bút XUComer: hỏi đáp, góp ý, báo lỗi, hay chỉ là một lời chào.',
-      chNote: 'Cần có tài khoản GitHub để bình luận.',
+      chNote: 'Viết và đăng ngay — không cần đăng nhập.',
       vLinear: 'Linear · Tuyến tính', vTactile: 'Tactile · Có nấc', vClicky: 'Clicky · Giòn', vThock: 'Thock · Trầm đục'
     },
     id: {
@@ -658,10 +657,10 @@
       padHint: 'Ketik beberapa kata di sini…',
       comments: 'Buku tamu',
       ch1: 'Buku tamu',
-      chLede: 'Punya pertanyaan, ide, atau sekadar ingin menyapa? Tinggalkan pesan di sini. Komentar disimpan di GitHub Discussions repositori ini, publik dan permanen.',
+      chLede: 'Punya pertanyaan, ide, atau sekadar ingin menyapa? Tinggalkan pesan di sini. Komentar disimpan di cloud, terlihat oleh semua, dan tanpa akun.',
       chTitle: 'Buku tamu · XUComer',
       chDesc: 'Buku tamu XUComer: bertanya, memberi saran, melaporkan masalah, atau sekadar menyapa.',
-      chNote: 'Diperlukan akun GitHub untuk berkomentar.',
+      chNote: 'Tulis dan kirim langsung — tanpa login.',
       vLinear: 'Linear · Linier', vTactile: 'Tactile · Berbuku', vClicky: 'Clicky · Klik tajam', vThock: 'Thock · Berat dan rendah'
     }
   };
@@ -771,7 +770,7 @@
       if (th) p.title = th.zh + ' · ' + th.en;
     });
 
-    if (page === 'comments') ensureGiscus(resolved);
+    if (page === 'comments') ensureGuestbook(resolved);
 
     store.set(LANG_KEY, code);
   }

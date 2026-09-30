@@ -622,13 +622,21 @@ h1 {
   margin-top: 32px;
 }
 
-.comment-box .giscus {
-  max-width: none;
-}
-
 .comment-box iframe {
   width: 100%;
   border: 0;
+}
+
+/* 内嵌的留言板应用：高度由 iframe 内部通过 postMessage 上报 */
+.gb-frame {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  height: 520px;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color-scheme: normal;
 }
 
 .comment-note {

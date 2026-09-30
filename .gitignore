@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 *.spec
 settings.json
+.wbapp_*.genie
