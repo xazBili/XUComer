@@ -11,7 +11,6 @@
 
 * { box-sizing: border-box; }
 
-/* hidden 属性必须真的隐藏：作者样式里的 display 会盖掉浏览器默认值 */
 [hidden] { display: none !important; }
 
 html, body { margin: 0; padding: 0; }
@@ -29,7 +28,6 @@ body {
   padding: 0 0 8px;
 }
 
-/* ---------- 表单 ---------- */
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -60,7 +58,6 @@ body {
 
 #text { resize: vertical; min-height: 74px; }
 
-/* ---------- 头像 + 昵称 ---------- */
 .id-row,
 .rhead {
   position: relative;
@@ -132,7 +129,6 @@ body {
 }
 .ava-del:hover { color: #ef5350; border-color: #ef5350; }
 
-/* 列表里的头像 */
 .item-ava {
   flex: none;
   width: 26px;
@@ -242,7 +238,6 @@ body {
 #send:hover { filter: brightness(1.08); }
 #send:disabled { opacity: .55; cursor: default; }
 
-/* ---------- 列表 ---------- */
 .meta {
   margin: 18px 0 8px;
   font-size: 12.5px;
@@ -322,7 +317,6 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* ---------- 回复 ---------- */
 .item-acts {
   display: flex;
   gap: 12px;
@@ -340,7 +334,6 @@ body {
 }
 .item-rbtn:hover { color: var(--accent); }
 
-/* ---------- 右下角「⋯」菜单 ---------- */
 .i-more-wrap {
   position: relative;
   flex: none;
@@ -486,20 +479,36 @@ body {
   font-size: 14px;
 }
 
-.foot { text-align: center; margin-top: 14px; }
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
 
-.more {
+.pg {
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--dim);
   font: inherit;
   font-size: 13.5px;
-  border-radius: 999px;
-  padding: 7px 20px;
+  border-radius: 8px;
+  padding: 6px 16px;
   cursor: pointer;
   transition: color .18s, border-color .18s;
 }
-.more:hover {
+.pg:hover {
   color: var(--text);
   border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+.pg:disabled { opacity: .45; cursor: default; }
+.pg:disabled:hover { color: var(--dim); border-color: var(--line); }
+
+.pg-no {
+  min-width: 72px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
 }
