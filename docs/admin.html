@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开发者登录 · XUComer</title>
+<meta name="description" content="XUComer 开发者登录。">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0d13">
+<link rel="icon" href="assets/img/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/img/icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="doc-body" data-page="admin">
+
+<header class="doc-top">
+  <a class="doc-back" href="index.html">
+    <span aria-hidden="true">←</span> 返回首页
+  </a>
+  <a class="doc-brand" href="index.html">
+    <img class="brand-img" src="assets/img/icon.png" alt="" width="26" height="26">
+    <b>XUComer</b>
+  </a>
+  <span class="doc-ver">v1.0.0</span>
+  <span class="doc-spacer"></span>
+
+  <div class="pill-group" id="themePicker" role="group" aria-label="同步主题"></div>
+
+  <label class="pick">
+    <span class="pick-label">语言</span>
+    <select id="langPicker" aria-label="界面语言"></select>
+  </label>
+</header>
+
+<main class="admin-page">
+  <h1 data-i18n="admTitle">开发者登录</h1>
+  <p class="doc-lede" data-i18n="admLede">
+    用开发者身份登录后，才能以 XUComer 的名义发表留言。
+  </p>
+
+  <form class="admin-card" id="admForm" autocomplete="off">
+    <label class="adm-row">
+      <span class="adm-label" data-i18n="admUser">用户名</span>
+      <input id="admName" type="text" autocomplete="off" spellcheck="false">
+    </label>
+    <label class="adm-row">
+      <span class="adm-label" data-i18n="admPass">密码</span>
+      <input id="admPass" type="password" autocomplete="new-password">
+    </label>
+    <p class="admin-msg" id="admMsg" role="status" aria-live="polite"></p>
+    <button class="admin-go" id="admGo" type="submit" data-i18n="admLogin">登录</button>
+  </form>
+
+  <div class="admin-card" id="admDone" hidden>
+    <p class="admin-ok" id="admOk" data-i18n="admOk">已以开发者身份登录。</p>
+    <a class="admin-go" id="admGoGb" href="comments.html" data-i18n="admGo">前往留言板</a>
+    <button class="admin-out" id="admOut" type="button" data-i18n="admOut">退出登录</button>
+  </div>
+</main>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

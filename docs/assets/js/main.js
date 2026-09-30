@@ -62,6 +62,23 @@
   let gbLang = 'zh_CN';
   let currentTheme = null;
 
+  /* ---- 开发者登录 ----
+     口令本身不出现在任何文件里，页面只保存口令的派生值：
+       登录校验值 = sha256('xucomer-login:' + 口令)   ← 只在登录页比对用
+       开发者密钥 = sha256('xucomer-dev:'   + 口令)   ← 服务端触发器认这个
+     两者互相推不出来，所以即使有人读到登录页的校验值也发不出开发者留言。 */
+  const DEV_USER = 'XUComer';
+  const LOGIN_HASH = 'c94a647bd6653a157f56f1e8441a2710719d5eace54bb90498e5f7d010d5452d';
+  const DEV_STORE = 'xucomer-gb-devkey';
+
+  async function sha256(text) {
+    const buf = new TextEncoder().encode(text);
+    const dig = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(dig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const devKeyNow = () => store.get(DEV_STORE, '');
+
   function gbTheme(t) {
     return {
       light: isLight(t.panel) ? '1' : '0',
@@ -98,7 +115,7 @@
     createGuestbookFrame();
     if (!gbFrame || !gbFrame.contentWindow) return;
     gbFrame.contentWindow.postMessage(
-      { gb: { theme: gbTheme(currentTheme), lang: gbLang } },
+      { gb: { theme: gbTheme(currentTheme), lang: gbLang, devkey: devKeyNow() } },
       GB_ORIGIN
     );
   }
@@ -111,10 +128,68 @@
   window.addEventListener('message', e => {
     if (e.origin !== GB_ORIGIN) return;
     const d = e.data;
-    if (!d || !d.gb || !d.gb.height || !gbFrame) return;
+    if (!d || !d.gb) return;
+
+    if (d.gb.logout) {                       /* 留言板里点了「退出」 */
+      try { localStorage.removeItem(DEV_STORE); } catch (err) {}
+      syncGuestbook();
+      refreshAdmin();
+      return;
+    }
+    if (!d.gb.height || !gbFrame) return;
     const h = Math.max(320, Math.min(6000, Math.round(d.gb.height)));
     gbFrame.style.height = h + 'px';
   });
+
+  /* ---------------- 登录页 ---------------- */
+  function refreshAdmin() {
+    const form = document.getElementById('admForm');
+    const done = document.getElementById('admDone');
+    if (!form || !done) return;
+    const on = !!devKeyNow();
+    form.hidden = on;
+    done.hidden = !on;
+  }
+
+  function bindAdmin() {
+    const form = document.getElementById('admForm');
+    if (!form) return;
+
+    const nameEl = document.getElementById('admName');
+    const passEl = document.getElementById('admPass');
+    const msgEl = document.getElementById('admMsg');
+    const outEl = document.getElementById('admOut');
+
+    const bad = () => {
+      const { pack } = tFor(store.get(LANG_KEY, 'system'));
+      msgEl.textContent = pack.admBad || 'Wrong credentials.';
+    };
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      msgEl.textContent = '';
+      const name = (nameEl.value || '').trim();
+      const pass = passEl.value || '';
+      let loginHash;
+      try { loginHash = await sha256('xucomer-login:' + pass); }
+      catch (err) { bad(); return; }
+
+      if (name !== DEV_USER || !pass || loginHash !== LOGIN_HASH) { bad(); return; }
+
+      try { store.set(DEV_STORE, await sha256('xucomer-dev:' + pass)); }
+      catch (err) { bad(); return; }
+
+      passEl.value = '';
+      refreshAdmin();
+    });
+
+    if (outEl) outEl.addEventListener('click', () => {
+      try { localStorage.removeItem(DEV_STORE); } catch (err) {}
+      refreshAdmin();
+    });
+
+    refreshAdmin();
+  }
 
   function buildThemePicker() {
     const box = document.getElementById('themePicker');
@@ -218,7 +293,16 @@
       chTitle: '留言板 · XUComer',
       chDesc: 'XUComer 留言板：提问、提建议、报告问题，或只是打个招呼。',
       chNote: '直接写就行，不用登录，发表后立刻显示。',
-      vLinear: 'Linear · 线性轻触', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 闷厚低频'
+      vLinear: 'Linear · 线性轻触', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 闷厚低频',
+      admTitle: '开发者登录',
+      admLede: '登录后才能以 XUComer 的名义发表留言。普通访客不用登录，直接就能评论。',
+      admUser: '用户名',
+      admPass: '密码',
+      admLogin: '登录',
+      admBad: '用户名或密码不对。',
+      admOk: '已以开发者身份登录。',
+      admGo: '前往留言板',
+      admOut: '退出登录',
     },
     en: {
       back: 'Back to home', langLabel: 'Language', themeLabel: 'Synced theme',
@@ -244,7 +328,16 @@
       chTitle: 'Guestbook · XUComer',
       chDesc: 'XUComer guestbook: ask questions, share ideas, report issues, or just say hello.',
       chNote: '直接寫就行，不用登入，發表後立刻顯示。',
-      vLinear: 'Linear · Smooth', vTactile: 'Tactile · Bump', vClicky: 'Clicky · Crisp', vThock: 'Thock · Deep & muted'
+      vLinear: 'Linear · Smooth', vTactile: 'Tactile · Bump', vClicky: 'Clicky · Crisp', vThock: 'Thock · Deep & muted',
+      admTitle: 'Developer sign-in',
+      admLede: 'Sign in to post as XUComer. Visitors do not need an account — they can comment right away.',
+      admUser: 'Username',
+      admPass: 'Password',
+      admLogin: 'Sign in',
+      admBad: 'Wrong username or password.',
+      admOk: 'Signed in as the developer.',
+      admGo: 'Go to guestbook',
+      admOut: 'Sign out',
     },
     zh_TW: {
       back: '返回首頁', langLabel: '語言', themeLabel: '同步主題',
@@ -270,7 +363,16 @@
       chTitle: '留言板 · XUComer',
       chDesc: 'XUComer 留言板：提問、提供建議、回報問題，或只是打聲招呼。',
       chNote: 'Just write and post — no sign-in required.',
-      vLinear: 'Linear · 線性輕觸', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 悶厚低頻'
+      vLinear: 'Linear · 線性輕觸', vTactile: 'Tactile · 段落感', vClicky: 'Clicky · 清脆段落', vThock: 'Thock · 悶厚低頻',
+      admTitle: '開發者登入',
+      admLede: '登入後才能以 XUComer 的名義發表留言。一般訪客不必登入，直接就能留言。',
+      admUser: '使用者名稱',
+      admPass: '密碼',
+      admLogin: '登入',
+      admBad: '使用者名稱或密碼錯誤。',
+      admOk: '已以開發者身分登入。',
+      admGo: '前往留言板',
+      admOut: '登出',
     },
     ja: {
       back: 'ホームに戻る', langLabel: '言語', themeLabel: 'テーマ同期',
@@ -296,7 +398,16 @@
       chTitle: '掲示板 · XUComer',
       chDesc: 'XUComer 掲示板：質問、提案、不具合報告、そして挨拶まで。',
       chNote: 'ログイン不要。書いたらそのまま投稿できます。',
-      vLinear: 'Linear · リニア', vTactile: 'Tactile · タクタイル', vClicky: 'Clicky · クリッキー', vThock: 'Thock · 低音ソフト'
+      vLinear: 'Linear · リニア', vTactile: 'Tactile · タクタイル', vClicky: 'Clicky · クリッキー', vThock: 'Thock · 低音ソフト',
+      admTitle: '開発者ログイン',
+      admLede: 'XUComer として投稿するにはログインが必要です。通常の訪問者はログイン不要で投稿できます。',
+      admUser: 'ユーザー名',
+      admPass: 'パスワード',
+      admLogin: 'ログイン',
+      admBad: 'ユーザー名またはパスワードが違います。',
+      admOk: '開発者としてログインしました。',
+      admGo: '掲示板へ',
+      admOut: 'ログアウト',
     },
     ko: {
       back: '홈으로', langLabel: '언어', themeLabel: '테마 동기화',
@@ -322,9 +433,17 @@
       chTitle: '방명록 · XUComer',
       chDesc: 'XUComer 방명록: 질문, 제안, 문제 제보, 그리고 인사까지.',
       chNote: '로그인 없이 바로 작성하고 등록할 수 있습니다.',
-      vLinear: 'Linear · 리니어', vTactile: 'Tactile · 택타일', vClicky: 'Clicky · 클리키', vThock: 'Thock · 묵직한 저음'
+      vLinear: 'Linear · 리니어', vTactile: 'Tactile · 택타일', vClicky: 'Clicky · 클리키', vThock: 'Thock · 묵직한 저음',
+      admTitle: '개발자 로그인',
+      admLede: 'XUComer 이름으로 게시하려면 로그인이 필요합니다. 일반 방문자는 로그인 없이 바로 댓글을 남길 수 있습니다.',
+      admUser: '사용자 이름',
+      admPass: '비밀번호',
+      admLogin: '로그인',
+      admBad: '사용자 이름 또는 비밀번호가 잘못되었습니다.',
+      admOk: '개발자로 로그인했습니다.',
+      admGo: '방명록으로 가기',
+      admOut: '로그아웃',
     },
-
     fr: {
       back: 'Retour à l’accueil', langLabel: 'Langue', themeLabel: 'Thème synchronisé',
       nav: { install: 'Installation', enable: 'Activer / désactiver', pick: 'Changer de son', volume: 'Volume', test: 'Aperçu', demo: 'Démo en ligne', up: 'Son au relâchement', import: 'Importer un son', manage: 'Gérer les sons', theme: 'Thèmes', lang: 'Langues', appearance: 'Réglages du site', tray: 'Zone de notification & démarrage', data: 'Emplacement des réglages', faq: 'FAQ' },
@@ -349,7 +468,16 @@
       chTitle: 'Livre d’or · XUComer',
       chDesc: 'Livre d’or XUComer : questions, suggestions, rapports de bugs, ou simples coucou.',
       chNote: 'Écrivez et publiez directement — aucune connexion requise.',
-      vLinear: 'Linear · Linéaire', vTactile: 'Tactile · Tactile', vClicky: 'Clicky · Cliquetis', vThock: 'Thock · Grave et sourd'
+      vLinear: 'Linear · Linéaire', vTactile: 'Tactile · Tactile', vClicky: 'Clicky · Cliquetis', vThock: 'Thock · Grave et sourd',
+      admTitle: 'Connexion développeur',
+      admLede: 'Connectez-vous pour publier au nom de XUComer. Les visiteurs n\'ont pas besoin de compte : ils peuvent commenter directement.',
+      admUser: 'Nom d\'utilisateur',
+      admPass: 'Mot de passe',
+      admLogin: 'Se connecter',
+      admBad: 'Nom d\'utilisateur ou mot de passe incorrect.',
+      admOk: 'Connecté en tant que développeur.',
+      admGo: 'Aller au livre d’or',
+      admOut: 'Se déconnecter',
     },
     de: {
       back: 'Zur Startseite', langLabel: 'Sprache', themeLabel: 'Synchrones Theme',
@@ -375,7 +503,16 @@
       chTitle: 'Gästebuch · XUComer',
       chDesc: 'XUComer-Gästebuch: Fragen, Vorschläge, Fehlermeldungen oder einfach ein Hallo.',
       chNote: 'Einfach schreiben und absenden — keine Anmeldung nötig.',
-      vLinear: 'Linear · Linear', vTactile: 'Tactile · Taktil', vClicky: 'Clicky · Knackig', vThock: 'Thock · Dumpf und tief'
+      vLinear: 'Linear · Linear', vTactile: 'Tactile · Taktil', vClicky: 'Clicky · Knackig', vThock: 'Thock · Dumpf und tief',
+      admTitle: 'Entwickler-Anmeldung',
+      admLede: 'Melde dich an, um als XUComer zu schreiben. Besucher brauchen kein Konto und können sofort kommentieren.',
+      admUser: 'Benutzername',
+      admPass: 'Passwort',
+      admLogin: 'Anmelden',
+      admBad: 'Benutzername oder Passwort ist falsch.',
+      admOk: 'Als Entwickler angemeldet.',
+      admGo: 'Zum Gästebuch',
+      admOut: 'Abmelden',
     },
     es: {
       back: 'Volver al inicio', langLabel: 'Idioma', themeLabel: 'Tema sincronizado',
@@ -401,7 +538,16 @@
       chTitle: 'Libro de visitas · XUComer',
       chDesc: 'Libro de visitas de XUComer: preguntas, sugerencias, informes de errores o simplemente un hola.',
       chNote: 'Escribe y publica directamente: no hace falta iniciar sesión.',
-      vLinear: 'Linear · Lineal', vTactile: 'Tactile · Táctil', vClicky: 'Clicky · Chasquido', vThock: 'Thock · Grave y sordo'
+      vLinear: 'Linear · Lineal', vTactile: 'Tactile · Táctil', vClicky: 'Clicky · Chasquido', vThock: 'Thock · Grave y sordo',
+      admTitle: 'Acceso de desarrollador',
+      admLede: 'Inicia sesión para publicar como XUComer. Los visitantes no necesitan cuenta: pueden comentar directamente.',
+      admUser: 'Usuario',
+      admPass: 'Contraseña',
+      admLogin: 'Iniciar sesión',
+      admBad: 'Usuario o contraseña incorrectos.',
+      admOk: 'Has iniciado sesión como desarrollador.',
+      admGo: 'Ir al libro de visitas',
+      admOut: 'Cerrar sesión',
     },
     pt: {
       back: 'Voltar ao início', langLabel: 'Idioma', themeLabel: 'Tema sincronizado',
@@ -427,7 +573,16 @@
       chTitle: 'Livro de visitas · XUComer',
       chDesc: 'Livro de visitas do XUComer: perguntas, sugestões, relatórios de problemas ou só um alô.',
       chNote: 'Escreva e publique direto — sem login.',
-      vLinear: 'Linear · Linear', vTactile: 'Tactile · Tátil', vClicky: 'Clicky · Estalo', vThock: 'Thock · Grave e abafado'
+      vLinear: 'Linear · Linear', vTactile: 'Tactile · Tátil', vClicky: 'Clicky · Estalo', vThock: 'Thock · Grave e abafado',
+      admTitle: 'Acesso do desenvolvedor',
+      admLede: 'Entre para publicar como XUComer. Visitantes não precisam de conta e podem comentar diretamente.',
+      admUser: 'Usuário',
+      admPass: 'Senha',
+      admLogin: 'Entrar',
+      admBad: 'Usuário ou senha incorretos.',
+      admOk: 'Você entrou como desenvolvedor.',
+      admGo: 'Ir para o livro de visitas',
+      admOut: 'Sair',
     },
     ru: {
       back: 'На главную', langLabel: 'Язык', themeLabel: 'Синхронизация темы',
@@ -453,7 +608,16 @@
       chTitle: 'Гостевая книга · XUComer',
       chDesc: 'Гостевая книга XUComer: вопросы, предложения, сообщения об ошибках или просто приветствие.',
       chNote: 'Просто напишите и отправьте — вход не нужен.',
-      vLinear: 'Linear · Линейный', vTactile: 'Tactile · Тактильный', vClicky: 'Clicky · Щелчок', vThock: 'Thock · Глухой низкий'
+      vLinear: 'Linear · Линейный', vTactile: 'Tactile · Тактильный', vClicky: 'Clicky · Щелчок', vThock: 'Thock · Глухой низкий',
+      admTitle: 'Вход для разработчика',
+      admLede: 'Войдите, чтобы публиковать от имени XUComer. Посетителям аккаунт не нужен — они могут комментировать сразу.',
+      admUser: 'Имя пользователя',
+      admPass: 'Пароль',
+      admLogin: 'Войти',
+      admBad: 'Неверное имя пользователя или пароль.',
+      admOk: 'Вы вошли как разработчик.',
+      admGo: 'Перейти в гостевую книгу',
+      admOut: 'Выйти',
     },
     it: {
       back: 'Torna alla home', langLabel: 'Lingua', themeLabel: 'Tema sincronizzato',
@@ -479,7 +643,16 @@
       chTitle: 'Libro degli ospiti · XUComer',
       chDesc: 'Libro degli ospiti di XUComer: domande, suggerimenti, segnalazioni o semplici saluti.',
       chNote: 'Scrivi e pubblica subito: nessun accesso richiesto.',
-      vLinear: 'Linear · Lineare', vTactile: 'Tactile · Tattile', vClicky: 'Clicky · Scatto', vThock: 'Thock · Cupo e profondo'
+      vLinear: 'Linear · Lineare', vTactile: 'Tactile · Tattile', vClicky: 'Clicky · Scatto', vThock: 'Thock · Cupo e profondo',
+      admTitle: 'Accesso sviluppatore',
+      admLede: 'Accedi per pubblicare come XUComer. I visitatori non hanno bisogno di un account: possono commentare subito.',
+      admUser: 'Nome utente',
+      admPass: 'Password',
+      admLogin: 'Accedi',
+      admBad: 'Nome utente o password errati.',
+      admOk: 'Accesso effettuato come sviluppatore.',
+      admGo: 'Vai al libro degli ospiti',
+      admOut: 'Esci',
     },
     nl: {
       back: 'Terug naar home', langLabel: 'Taal', themeLabel: 'Thema synchroniseren',
@@ -505,7 +678,16 @@
       chTitle: 'Gastenboek · XUComer',
       chDesc: 'XUComer-gastenboek: vragen, suggesties, bugmeldingen of gewoon een hallo.',
       chNote: 'Schrijf en plaats direct — geen inloggen nodig.',
-      vLinear: 'Linear · Lineair', vTactile: 'Tactile · Tastbaar', vClicky: 'Clicky · Klikkend', vThock: 'Thock · Dof en laag'
+      vLinear: 'Linear · Lineair', vTactile: 'Tactile · Tastbaar', vClicky: 'Clicky · Klikkend', vThock: 'Thock · Dof en laag',
+      admTitle: 'Inloggen als ontwikkelaar',
+      admLede: 'Log in om als XUComer te plaatsen. Bezoekers hebben geen account nodig en kunnen direct reageren.',
+      admUser: 'Gebruikersnaam',
+      admPass: 'Wachtwoord',
+      admLogin: 'Inloggen',
+      admBad: 'Onjuiste gebruikersnaam of wachtwoord.',
+      admOk: 'Ingelogd als ontwikkelaar.',
+      admGo: 'Naar het gastenboek',
+      admOut: 'Uitloggen',
     },
     pl: {
       back: 'Wróć na stronę główną', langLabel: 'Język', themeLabel: 'Zsynchronizowany motyw',
@@ -531,7 +713,16 @@
       chTitle: 'Księga gości · XUComer',
       chDesc: 'Księga gości XUComer: pytania, sugestie, zgłoszenia błędów lub zwykłe powitanie.',
       chNote: 'Napisz i opublikuj od razu — bez logowania.',
-      vLinear: 'Linear · Liniowy', vTactile: 'Tactile · Wyczuwalny', vClicky: 'Clicky · Klikający', vThock: 'Thock · Głuchy i niski'
+      vLinear: 'Linear · Liniowy', vTactile: 'Tactile · Wyczuwalny', vClicky: 'Clicky · Klikający', vThock: 'Thock · Głuchy i niski',
+      admTitle: 'Logowanie twórcy',
+      admLede: 'Zaloguj się, aby publikować jako XUComer. Goście nie potrzebują konta — mogą komentować od razu.',
+      admUser: 'Nazwa użytkownika',
+      admPass: 'Hasło',
+      admLogin: 'Zaloguj się',
+      admBad: 'Nieprawidłowa nazwa użytkownika lub hasło.',
+      admOk: 'Zalogowano jako twórca.',
+      admGo: 'Przejdź do księgi gości',
+      admOut: 'Wyloguj się',
     },
     tr: {
       back: 'Ana sayfaya dön', langLabel: 'Dil', themeLabel: 'Senkron tema',
@@ -557,7 +748,16 @@
       chTitle: 'Ziyaretçi defteri · XUComer',
       chDesc: 'XUComer ziyaretçi defteri: sorular, öneriler, hata bildirimleri ya da sadece bir merhaba.',
       chNote: 'Yaz ve doğrudan gönder — giriş gerekmez.',
-      vLinear: 'Linear · Doğrusal', vTactile: 'Tactile · Dokunsal', vClicky: 'Clicky · Tıkırtılı', vThock: 'Thock · Boğuk ve derin'
+      vLinear: 'Linear · Doğrusal', vTactile: 'Tactile · Dokunsal', vClicky: 'Clicky · Tıkırtılı', vThock: 'Thock · Boğuk ve derin',
+      admTitle: 'Geliştirici girişi',
+      admLede: 'XUComer olarak göndermek için giriş yapın. Ziyaretçilerin hesaba ihtiyacı yok — hemen yorum yazabilirler.',
+      admUser: 'Kullanıcı adı',
+      admPass: 'Şifre',
+      admLogin: 'Giriş yap',
+      admBad: 'Kullanıcı adı veya şifre hatalı.',
+      admOk: 'Geliştirici olarak giriş yapıldı.',
+      admGo: 'Konuk defterine git',
+      admOut: 'Çıkış yap',
     },
     ar: {
       back: 'العودة إلى الرئيسية', langLabel: 'اللغة', themeLabel: 'مزامنة السمة',
@@ -583,7 +783,16 @@
       chTitle: 'سجل الزوار · XUComer',
       chDesc: 'سجل زوار XUComer: الأسئلة والاقتراحات وبلاغات الأخطاء، أو مجرد تحية.',
       chNote: 'اكتب وانشر مباشرة — لا حاجة لتسجيل الدخول.',
-      vLinear: 'Linear · خطي', vTactile: 'Tactile · ملموس', vClicky: 'Clicky · طقطقة', vThock: 'Thock · عميق ومكتوم'
+      vLinear: 'Linear · خطي', vTactile: 'Tactile · ملموس', vClicky: 'Clicky · طقطقة', vThock: 'Thock · عميق ومكتوم',
+      admTitle: 'تسجيل دخول المطور',
+      admLede: 'سجّل الدخول لتنشر باسم XUComer. الزوار لا يحتاجون حسابًا ويمكنهم التعليق مباشرة.',
+      admUser: 'اسم المستخدم',
+      admPass: 'كلمة المرور',
+      admLogin: 'تسجيل الدخول',
+      admBad: 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+      admOk: 'تم تسجيل الدخول كمطور.',
+      admGo: 'الانتقال إلى لوحة الزوار',
+      admOut: 'تسجيل الخروج',
     },
     th: {
       back: 'กลับหน้าแรก', langLabel: 'ภาษา', themeLabel: 'ธีมที่ซิงค์',
@@ -609,7 +818,16 @@
       chTitle: 'สมุดเยี่ยม · XUComer',
       chDesc: 'สมุดเยี่ยม XUComer: คำถาม ข้อเสนอแนะ แจ้งปัญหา หรือแค่ทักทาย',
       chNote: 'เขียนแล้วโพสต์ได้เลย ไม่ต้องเข้าสู่ระบบ',
-      vLinear: 'Linear · เส้นตรงนุ่มนวล', vTactile: 'Tactile · มีจังหวะ', vClicky: 'Clicky · กรอบใส', vThock: 'Thock · ทุ้มหนา'
+      vLinear: 'Linear · เส้นตรงนุ่มนวล', vTactile: 'Tactile · มีจังหวะ', vClicky: 'Clicky · กรอบใส', vThock: 'Thock · ทุ้มหนา',
+      admTitle: 'เข้าสู่ระบบผู้พัฒนา',
+      admLede: 'ลงชื่อเข้าใช้เพื่อโพสต์ในชื่อ XUComer ผู้เยี่ยมชมไม่ต้องมีบัญชี สามารถคอมเมนต์ได้ทันที',
+      admUser: 'ชื่อผู้ใช้',
+      admPass: 'รหัสผ่าน',
+      admLogin: 'เข้าสู่ระบบ',
+      admBad: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+      admOk: 'ลงชื่อเข้าใช้ในฐานะผู้พัฒนาแล้ว',
+      admGo: 'ไปที่สมุดเยี่ยมชม',
+      admOut: 'ออกจากระบบ',
     },
     vi: {
       back: 'Về trang chủ', langLabel: 'Ngôn ngữ', themeLabel: 'Đồng bộ giao diện',
@@ -635,7 +853,16 @@
       chTitle: 'Sổ lưu bút · XUComer',
       chDesc: 'Sổ lưu bút XUComer: hỏi đáp, góp ý, báo lỗi, hay chỉ là một lời chào.',
       chNote: 'Viết và đăng ngay — không cần đăng nhập.',
-      vLinear: 'Linear · Tuyến tính', vTactile: 'Tactile · Có nấc', vClicky: 'Clicky · Giòn', vThock: 'Thock · Trầm đục'
+      vLinear: 'Linear · Tuyến tính', vTactile: 'Tactile · Có nấc', vClicky: 'Clicky · Giòn', vThock: 'Thock · Trầm đục',
+      admTitle: 'Đăng nhập nhà phát triển',
+      admLede: 'Đăng nhập để đăng với tên XUComer. Khách không cần tài khoản, có thể bình luận ngay.',
+      admUser: 'Tên người dùng',
+      admPass: 'Mật khẩu',
+      admLogin: 'Đăng nhập',
+      admBad: 'Tên người dùng hoặc mật khẩu không đúng.',
+      admOk: 'Đã đăng nhập với tư cách nhà phát triển.',
+      admGo: 'Đi tới sổ lưu bút',
+      admOut: 'Đăng xuất',
     },
     id: {
       back: 'Kembali ke beranda', langLabel: 'Bahasa', themeLabel: 'Sinkronisasi tema',
@@ -661,7 +888,16 @@
       chTitle: 'Buku tamu · XUComer',
       chDesc: 'Buku tamu XUComer: bertanya, memberi saran, melaporkan masalah, atau sekadar menyapa.',
       chNote: 'Tulis dan kirim langsung — tanpa login.',
-      vLinear: 'Linear · Linier', vTactile: 'Tactile · Berbuku', vClicky: 'Clicky · Klik tajam', vThock: 'Thock · Berat dan rendah'
+      vLinear: 'Linear · Linier', vTactile: 'Tactile · Berbuku', vClicky: 'Clicky · Klik tajam', vThock: 'Thock · Berat dan rendah',
+      admTitle: 'Login pengembang',
+      admLede: 'Masuk untuk memposting sebagai XUComer. Pengunjung tidak perlu akun dan bisa langsung berkomentar.',
+      admUser: 'Nama pengguna',
+      admPass: 'Kata sandi',
+      admLogin: 'Masuk',
+      admBad: 'Nama pengguna atau kata sandi salah.',
+      admOk: 'Masuk sebagai pengembang.',
+      admGo: 'Ke buku tamu',
+      admOut: 'Keluar'
     }
   };
 
@@ -750,6 +986,14 @@
     setText('[data-i18n="ch1"]', pack.ch1);
     setText('[data-i18n="chLede"]', pack.chLede);
     setText('#commentNote', pack.chNote);
+    setText('[data-i18n="admTitle"]', pack.admTitle);
+    setText('[data-i18n="admLede"]', pack.admLede);
+    setText('[data-i18n="admUser"]', pack.admUser);
+    setText('[data-i18n="admPass"]', pack.admPass);
+    setText('[data-i18n="admLogin"]', pack.admLogin);
+    setText('[data-i18n="admOk"]', pack.admOk);
+    setText('[data-i18n="admGo"]', pack.admGo);
+    setText('[data-i18n="admOut"]', pack.admOut);
 
     document.querySelectorAll('option[data-voice]').forEach(o => {
       const k = o.dataset.voice;
@@ -764,6 +1008,7 @@
     });
     if (page === 'guide') document.title = pack.docTitle;
     else if (page === 'comments') document.title = pack.chTitle;
+    else if (page === 'admin') document.title = pack.admTitle + ' · XUComer';
 
     document.querySelectorAll('.pill').forEach(p => {
       const th = THEMES.find(x => x.id === p.dataset.id);
@@ -792,6 +1037,7 @@
   }
 
   buildLangPicker();
+  bindAdmin();
 
   /* ============ 指南页：滚动高亮当前章节 ============ */
   const links = Array.prototype.slice.call(document.querySelectorAll('.doc-nav a[href^="#"]'));

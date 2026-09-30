@@ -59,6 +59,35 @@ body {
 #nick::placeholder,
 #text::placeholder { color: var(--dim); opacity: .85; }
 
+.as {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.as-name { font-weight: 600; font-size: 13.5px; }
+.as-tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.as-out {
+  margin-inline-start: auto;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--dim);
+  cursor: pointer;
+}
+.as-out:hover { color: var(--accent); }
+
 .hp {
   position: absolute !important;
   left: -9999px !important;
