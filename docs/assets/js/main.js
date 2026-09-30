@@ -135,6 +135,34 @@
     });
     const found = THEMES.find(t => t.id === saved) || THEMES[0];
     applyTheme(found);
+    setupPillScroll(box);
+  }
+
+  /* 文档页顶栏的色点条放不下 40 个，做成可横向滚动 */
+  function setupPillScroll(box) {
+    if (!box || box.dataset.scrollReady) return;
+    box.dataset.scrollReady = '1';
+    const update = (first) => {
+      const scrollable = box.scrollWidth - box.clientWidth > 2;
+      box.classList.toggle('scrollable', scrollable);
+      box.classList.toggle('at-start', box.scrollLeft <= 2);
+      box.classList.toggle('at-end', box.scrollLeft + box.clientWidth >= box.scrollWidth - 2);
+      const on = box.querySelector('.pill.on');
+      if (first && on && scrollable) {
+        const l = on.offsetLeft, r = l + on.offsetWidth;
+        if (l < box.scrollLeft) box.scrollLeft = l - 8;
+        else if (r > box.scrollLeft + box.clientWidth) box.scrollLeft = r - box.clientWidth + 8;
+      }
+    };
+    box.addEventListener('scroll', () => update(false), { passive: true });
+    window.addEventListener('resize', () => update(false));
+    box.addEventListener('wheel', e => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      if (box.scrollWidth - box.clientWidth <= 2) return;
+      e.preventDefault();
+      box.scrollLeft += e.deltaY;
+    }, { passive: false });
+    update(true);
   }
 
   fetch('assets/js/themes.json')

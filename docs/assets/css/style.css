@@ -262,6 +262,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 9px;
+  flex: none;
+  white-space: nowrap;
   color: var(--fg);
   text-decoration: none;
   font-size: 16px;
@@ -274,6 +276,8 @@ h1 {
 }
 .doc-ver {
   font-size: 12px;
+  flex: none;
+  white-space: nowrap;
   color: var(--fg-dim);
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -284,6 +288,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex: none;
+  white-space: nowrap;
   color: var(--fg-dim);
   text-decoration: none;
   font-size: 14px;
@@ -303,6 +309,28 @@ h1 {
   border-radius: 999px;
   background: var(--card);
 }
+
+/* 文档页顶栏放不下 40 个色点，收成可横向滚动的一条 */
+.doc-top .pill-group {
+  flex: 0 1 auto;
+  max-width: min(44vw, 400px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.doc-top .pill-group::-webkit-scrollbar { display: none; }
+.doc-top .pill-group.scrollable.at-start:not(.at-end) {
+  mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent 100%);
+}
+.doc-top .pill-group.scrollable.at-end:not(.at-start) {
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px);
+}
+.doc-top .pill-group.scrollable:not(.at-start):not(.at-end) {
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+.doc-top .select-wrap,
+.doc-top .pick { flex: none; }
 .pill {
   width: 17px;
   height: 17px;
@@ -320,6 +348,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  flex: none;
+  white-space: nowrap;
   padding: 6px 11px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -327,7 +357,7 @@ h1 {
   font-size: 13.5px;
   color: var(--fg-dim);
 }
-.pick-label { opacity: .8; }
+.pick-label { opacity: .8; flex: none; }
 .pick select {
   border: 0;
   background: transparent;
