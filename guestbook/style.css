@@ -149,6 +149,18 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.item-dev {
+  display: inline-block;
+  margin-inline-start: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  white-space: nowrap;
+}
 .item-time {
   flex: none;
   margin-inline-start: auto;
