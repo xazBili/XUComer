@@ -11,6 +11,9 @@
 
 * { box-sizing: border-box; }
 
+/* hidden 属性必须真的隐藏：作者样式里的 display 会盖掉浏览器默认值 */
+[hidden] { display: none !important; }
+
 html, body { margin: 0; padding: 0; }
 
 body {
@@ -202,6 +205,101 @@ body {
   font-size: 14.5px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* ---------- 回复 ---------- */
+.item-acts {
+  display: flex;
+  gap: 12px;
+  margin-top: 7px;
+}
+.item-rbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--dim);
+  cursor: pointer;
+  transition: color .18s;
+}
+.item-rbtn:hover { color: var(--accent); }
+
+.rform {
+  margin-top: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.rform textarea {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--input);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 11px;
+  outline: none;
+  resize: vertical;
+  min-height: 56px;
+  transition: border-color .18s, box-shadow .18s;
+}
+.rform textarea:focus {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.rform textarea::placeholder { color: var(--dim); opacity: .85; }
+
+.rbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rbar .msg {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rbar .msg.err { color: #f0605d; }
+
+.rf-send {
+  flex: none;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 16px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: filter .18s, opacity .18s;
+}
+.rf-send:hover { filter: brightness(1.08); }
+.rf-send:disabled { opacity: .55; cursor: default; }
+
+.replies {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.replies:not(:empty) {
+  margin-top: 10px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--line);
+}
+.item.reply {
+  background: var(--input);
+  padding: 9px 12px;
 }
 
 .empty,

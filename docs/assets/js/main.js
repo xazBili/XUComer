@@ -160,31 +160,75 @@
     const msgEl = document.getElementById('admMsg');
     const outEl = document.getElementById('admOut');
 
-    const bad = () => {
+    /* ---- 注入防护 ----
+       1) 白名单：用户名与口令只允许固定形态的字符，其它一律当成错误输入；
+       2) 黑名单：SQL 元字符与关键字直接拒绝，绝不把原始输入带到任何查询；
+       3) 口令本身从不参与查询，只在浏览器里求哈希后比对，
+          服务端另有一道 devkey 校验（常量比较 + 64 位十六进制正则）。 */
+    const NAME_OK = /^[A-Za-z0-9_]{3,32}$/;
+    const PASS_OK = /^[A-Za-z0-9_.@#!-]{4,128}$/;
+    const SQLI = /(--|\/\*|\*\/|;|'|"|`|\\|\||\b(select|insert|update|delete|drop|alter|create|truncate|union|exec|execute|grant|revoke|sleep|benchmark|load_file|information_schema|pg_catalog|pg_sleep|xp_cmdshell)\b)/i;
+
+    /* 连续失败 5 次锁 60 秒，防暴力试口令 */
+    const TRY_KEY = 'xucomer-adm-try';
+    const MAX_TRY = 5, LOCK_MS = 60000;
+
+    function tries() {
+      try { return JSON.parse(localStorage.getItem(TRY_KEY) || '') || { n: 0, t: 0 }; }
+      catch (e) { return { n: 0, t: 0 }; }
+    }
+    function saveTries(v) { try { localStorage.setItem(TRY_KEY, JSON.stringify(v)); } catch (e) {} }
+    function lockedFor() {
+      const s = tries();
+      if (s.n < MAX_TRY) return 0;
+      const left = LOCK_MS - (Date.now() - (s.t || 0));
+      if (left <= 0) { saveTries({ n: 0, t: 0 }); return 0; }
+      return Math.ceil(left / 1000);
+    }
+    function fail() {
+      saveTries({ n: tries().n + 1, t: Date.now() });
       const { pack } = tFor(store.get(LANG_KEY, 'system'));
       msgEl.textContent = pack.admBad || 'Wrong credentials.';
-    };
+    }
+    function locked(secs) {
+      const { pack } = tFor(store.get(LANG_KEY, 'system'));
+      msgEl.textContent = (pack.admLock || 'Too many attempts — try again in {n}s.').replace('{n}', String(secs));
+    }
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
       msgEl.textContent = '';
+
+      const lock = lockedFor();
+      if (lock > 0) { locked(lock); return; }
+
       const name = (nameEl.value || '').trim();
       const pass = passEl.value || '';
+
+      if (!NAME_OK.test(name) || !PASS_OK.test(pass) || SQLI.test(name) || SQLI.test(pass)) {
+        fail();
+        return;
+      }
+
       let loginHash;
       try { loginHash = await sha256('xucomer-login:' + pass); }
-      catch (err) { bad(); return; }
+      catch (err) { fail(); return; }
 
-      if (name !== DEV_USER || !pass || loginHash !== LOGIN_HASH) { bad(); return; }
+      if (name !== DEV_USER || loginHash !== LOGIN_HASH) { fail(); return; }
 
-      try { store.set(DEV_STORE, await sha256('xucomer-dev:' + pass)); }
-      catch (err) { bad(); return; }
+      let devKeyValue;
+      try { devKeyValue = await sha256('xucomer-dev:' + pass); }
+      catch (err) { fail(); return; }
 
+      store.set(DEV_STORE, devKeyValue);
+      saveTries({ n: 0, t: 0 });
       passEl.value = '';
       refreshAdmin();
     });
 
     if (outEl) outEl.addEventListener('click', () => {
       try { localStorage.removeItem(DEV_STORE); } catch (err) {}
+      saveTries({ n: 0, t: 0 });
       refreshAdmin();
     });
 
@@ -300,6 +344,7 @@
       admPass: '密码',
       admLogin: '登录',
       admBad: '用户名或密码不对。',
+      admLock: '失败次数太多，请 {n} 秒后再试。',
       admOk: '已以开发者身份登录。',
       admGo: '前往留言板',
       admOut: '退出登录',
@@ -335,6 +380,7 @@
       admPass: 'Password',
       admLogin: 'Sign in',
       admBad: 'Wrong username or password.',
+      admLock: 'Too many attempts — try again in {n}s.',
       admOk: 'Signed in as the developer.',
       admGo: 'Go to guestbook',
       admOut: 'Sign out',
@@ -370,6 +416,7 @@
       admPass: '密碼',
       admLogin: '登入',
       admBad: '使用者名稱或密碼錯誤。',
+      admLock: '失敗次數太多，請 {n} 秒後再試。',
       admOk: '已以開發者身分登入。',
       admGo: '前往留言板',
       admOut: '登出',
@@ -405,6 +452,7 @@
       admPass: 'パスワード',
       admLogin: 'ログイン',
       admBad: 'ユーザー名またはパスワードが違います。',
+      admLock: '試行回数が多すぎます。{n} 秒後にお試しください。',
       admOk: '開発者としてログインしました。',
       admGo: '掲示板へ',
       admOut: 'ログアウト',
@@ -440,6 +488,7 @@
       admPass: '비밀번호',
       admLogin: '로그인',
       admBad: '사용자 이름 또는 비밀번호가 잘못되었습니다.',
+      admLock: '시도가 너무 많습니다. {n}초 후에 다시 시도해 주세요.',
       admOk: '개발자로 로그인했습니다.',
       admGo: '방명록으로 가기',
       admOut: '로그아웃',
@@ -475,6 +524,7 @@
       admPass: 'Mot de passe',
       admLogin: 'Se connecter',
       admBad: 'Nom d\'utilisateur ou mot de passe incorrect.',
+      admLock: 'Trop de tentatives — réessayez dans {n} s.',
       admOk: 'Connecté en tant que développeur.',
       admGo: 'Aller au livre d’or',
       admOut: 'Se déconnecter',
@@ -510,6 +560,7 @@
       admPass: 'Passwort',
       admLogin: 'Anmelden',
       admBad: 'Benutzername oder Passwort ist falsch.',
+      admLock: 'Zu viele Versuche — in {n} s erneut versuchen.',
       admOk: 'Als Entwickler angemeldet.',
       admGo: 'Zum Gästebuch',
       admOut: 'Abmelden',
@@ -545,6 +596,7 @@
       admPass: 'Contraseña',
       admLogin: 'Iniciar sesión',
       admBad: 'Usuario o contraseña incorrectos.',
+      admLock: 'Demasiados intentos: vuelve a probar en {n} s.',
       admOk: 'Has iniciado sesión como desarrollador.',
       admGo: 'Ir al libro de visitas',
       admOut: 'Cerrar sesión',
@@ -580,6 +632,7 @@
       admPass: 'Senha',
       admLogin: 'Entrar',
       admBad: 'Usuário ou senha incorretos.',
+      admLock: 'Tentativas demais: tente de novo em {n} s.',
       admOk: 'Você entrou como desenvolvedor.',
       admGo: 'Ir para o livro de visitas',
       admOut: 'Sair',
@@ -615,6 +668,7 @@
       admPass: 'Пароль',
       admLogin: 'Войти',
       admBad: 'Неверное имя пользователя или пароль.',
+      admLock: 'Слишком много попыток — повторите через {n} с.',
       admOk: 'Вы вошли как разработчик.',
       admGo: 'Перейти в гостевую книгу',
       admOut: 'Выйти',
@@ -650,6 +704,7 @@
       admPass: 'Password',
       admLogin: 'Accedi',
       admBad: 'Nome utente o password errati.',
+      admLock: 'Troppi tentativi: riprova tra {n} s.',
       admOk: 'Accesso effettuato come sviluppatore.',
       admGo: 'Vai al libro degli ospiti',
       admOut: 'Esci',
@@ -685,6 +740,7 @@
       admPass: 'Wachtwoord',
       admLogin: 'Inloggen',
       admBad: 'Onjuiste gebruikersnaam of wachtwoord.',
+      admLock: 'Te veel pogingen — probeer het over {n} s opnieuw.',
       admOk: 'Ingelogd als ontwikkelaar.',
       admGo: 'Naar het gastenboek',
       admOut: 'Uitloggen',
@@ -720,6 +776,7 @@
       admPass: 'Hasło',
       admLogin: 'Zaloguj się',
       admBad: 'Nieprawidłowa nazwa użytkownika lub hasło.',
+      admLock: 'Zbyt wiele prób — spróbuj ponownie za {n} s.',
       admOk: 'Zalogowano jako twórca.',
       admGo: 'Przejdź do księgi gości',
       admOut: 'Wyloguj się',
@@ -755,6 +812,7 @@
       admPass: 'Şifre',
       admLogin: 'Giriş yap',
       admBad: 'Kullanıcı adı veya şifre hatalı.',
+      admLock: 'Çok fazla deneme — {n} sn sonra tekrar dene.',
       admOk: 'Geliştirici olarak giriş yapıldı.',
       admGo: 'Konuk defterine git',
       admOut: 'Çıkış yap',
@@ -790,6 +848,7 @@
       admPass: 'كلمة المرور',
       admLogin: 'تسجيل الدخول',
       admBad: 'اسم المستخدم أو كلمة المرور غير صحيحة.',
+      admLock: 'محاولات كثيرة جدًا — أعد المحاولة بعد {n} ثانية.',
       admOk: 'تم تسجيل الدخول كمطور.',
       admGo: 'الانتقال إلى لوحة الزوار',
       admOut: 'تسجيل الخروج',
@@ -825,6 +884,7 @@
       admPass: 'รหัสผ่าน',
       admLogin: 'เข้าสู่ระบบ',
       admBad: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+      admLock: 'พยายามหลายครั้งเกินไป ลองอีกครั้งใน {n} วินาที',
       admOk: 'ลงชื่อเข้าใช้ในฐานะผู้พัฒนาแล้ว',
       admGo: 'ไปที่สมุดเยี่ยมชม',
       admOut: 'ออกจากระบบ',
@@ -860,6 +920,7 @@
       admPass: 'Mật khẩu',
       admLogin: 'Đăng nhập',
       admBad: 'Tên người dùng hoặc mật khẩu không đúng.',
+      admLock: 'Quá nhiều lần thử — thử lại sau {n} giây.',
       admOk: 'Đã đăng nhập với tư cách nhà phát triển.',
       admGo: 'Đi tới sổ lưu bút',
       admOut: 'Đăng xuất',
@@ -895,6 +956,7 @@
       admPass: 'Kata sandi',
       admLogin: 'Masuk',
       admBad: 'Nama pengguna atau kata sandi salah.',
+      admLock: 'Terlalu banyak percobaan — coba lagi dalam {n} detik.',
       admOk: 'Masuk sebagai pengembang.',
       admGo: 'Ke buku tamu',
       admOut: 'Keluar'
