@@ -72,7 +72,7 @@
 
   function sidNow() {
     let s = '';
-    try { s = localStorage.getItem(SID_KEY) || ''; } catch (e) {}
+    try { s = sessionStorage.getItem(SID_KEY) || ''; } catch (e) {}
     if (/^[0-9a-f]{32,64}$/.test(s)) return s;
     try {
       const a = new Uint8Array(16);
@@ -81,13 +81,13 @@
     } catch (e) {
       s = ('x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).slice(0, 32);
     }
-    try { localStorage.setItem(SID_KEY, s); } catch (e) {}
+    try { sessionStorage.setItem(SID_KEY, s); } catch (e) {}
     return s;
   }
 
   function mineIds() {
     try {
-      const a = JSON.parse(localStorage.getItem(MINE_KEY) || '[]');
+      const a = JSON.parse(sessionStorage.getItem(MINE_KEY) || '[]');
       if (!Array.isArray(a)) return [];
       return a.map(Number).filter(n => n > 0);
     } catch (e) { return []; }
@@ -99,7 +99,7 @@
     const a = mineIds();
     if (a.indexOf(n) < 0) a.push(n);
     try {
-      localStorage.setItem(MINE_KEY, JSON.stringify(a.slice(-300)));
+      sessionStorage.setItem(MINE_KEY, JSON.stringify(a.slice(-300)));
     } catch (e) {}
   }
 
@@ -107,7 +107,7 @@
     const n = Number(id);
     if (!n) return;
     try {
-      localStorage.setItem(MINE_KEY, JSON.stringify(mineIds().filter(x => x !== n)));
+      sessionStorage.setItem(MINE_KEY, JSON.stringify(mineIds().filter(x => x !== n)));
     } catch (e) {}
   }
 
