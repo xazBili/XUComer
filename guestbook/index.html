@@ -13,6 +13,15 @@
 <main class="gb">
 
   <form id="form" class="card" autocomplete="off">
+    <div class="acc">
+      <span class="acc-state" id="accState" hidden></span>
+      <input id="user" class="acc-in" type="text" maxlength="24" placeholder="用户名" autocomplete="username">
+      <input id="pass" class="acc-in" type="password" maxlength="64" placeholder="密码" autocomplete="current-password">
+      <button id="loginBtn" class="acc-btn" type="button">登录</button>
+      <button id="regBtn" class="acc-btn" type="button">注册</button>
+      <button id="accOut" class="acc-btn" type="button" hidden>退出登录</button>
+    </div>
+    <p class="acc-tip" id="accTip">注册后换设备也能删自己的留言，不注册照样可以匿名发言。</p>
     <div class="as" id="as" hidden>
       <span class="as-name">XUComer</span><span class="as-tag" id="asTag">开发者</span>
       <label class="as-pin"><input id="pinBox" type="checkbox"><span id="pinTxt">置顶</span></label>
