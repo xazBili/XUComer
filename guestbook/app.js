@@ -9,30 +9,32 @@
   const PAGE = 20;          /* 每次加载条数 */
   const COOLDOWN = 10000;   /* 两条留言最小间隔（毫秒） */
   const NICK_KEY = 'xucomer-gb-nick';
+  const AVA_KEY = 'xucomer-gb-avatar';
   const LAST_KEY = 'xucomer-gb-last';
   const SID_KEY = 'xucomer-gb-sid';
+  const AVA_MAX = 8000;      /* 头像 base64 上限，和数据库里的校验保持一致 */
   const MINE_KEY = 'xucomer-gb-mine';   /* 本机发过的留言 id，用来决定能不能删 */
   const PARENT = 'https://xazbili.github.io';
 
   const STR = {
-    zh_CN: { title:'留言板', lede:'留下你的想法、建议或问题，不需要注册账号。', nickPh:'怎么称呼你？（选填）', textPh:'想说点什么…', send:'发表', sending:'发表中…', more:'加载更多', empty:'还没有留言，来说第一句吧。', loading:'加载中…', fail:'发表失败，请稍后再试。', ok:'发表成功，谢谢！', anon:'匿名', fast:'发得有点快，请等几秒再试。', need:'请先写点内容。', count:'{n} 条留言', offline:'留言加载失败，请刷新页面重试。' , dev:'开发者', reserved:'「XUComer」是开发者专属昵称，请换一个。' , out:'退出登录', rpl:'回复', rplPh:'写下你的回复…', cd:'请等 {n} 秒再发送。', ops:'更多操作', del:'删除', delConfirm:'再点一次确认删除', delOk:'已删除', delNo:'删不掉这条留言', pinLbl:'置顶', pinOn:'置顶到最前', pinOff:'取消置顶', pinOk:'已置顶', pinUndo:'已取消置顶', pinFail:'操作失败，请稍后再试。', pinnedTag:'置顶' },
-    zh_TW: { title:'留言板', lede:'留下你的想法、建議或問題，不需要註冊帳號。', nickPh:'怎麼稱呼你？（選填）', textPh:'想說點什麼…', send:'發表', sending:'發表中…', more:'載入更多', empty:'還沒有留言，來說第一句吧。', loading:'載入中…', fail:'發表失敗，請稍後再試。', ok:'發表成功，謝謝！', anon:'匿名', fast:'發得有點快，請等幾秒再試。', need:'請先寫點內容。', count:'{n} 則留言', offline:'留言載入失敗，請重新整理頁面再試。' , dev:'開發者', reserved:'「XUComer」是開發者專屬暱稱，請換一個。' , out:'登出', rpl:'回覆', rplPh:'寫下你的回覆…', cd:'請等 {n} 秒後再發送。', ops:'更多操作', del:'刪除', delConfirm:'再點一次確認刪除', delOk:'已刪除', delNo:'刪不掉這則留言', pinLbl:'置頂', pinOn:'置頂到最前', pinOff:'取消置頂', pinOk:'已置頂', pinUndo:'已取消置頂', pinFail:'操作失敗，請稍後再試。', pinnedTag:'置頂' },
-    en: { title:'Guestbook', lede:'Leave a thought, an idea or a question — no account needed.', nickPh:'What should we call you? (optional)', textPh:'Say something…', send:'Post', sending:'Posting…', more:'Load more', empty:'No comments yet — be the first.', loading:'Loading…', fail:"Couldn't post — please try again.", ok:'Posted. Thanks!', anon:'Anonymous', fast:'That was quick — wait a few seconds.', need:'Please write something first.', count:'{n} comments', offline:"Couldn't load comments — refresh and try again." , dev:'Developer', reserved:'"XUComer" is reserved for the developer — please pick another name.' , out:'Log out', rpl:'Reply', rplPh:'Write a reply…', cd:'Wait {n}s before posting again.', ops:'More actions', del:'Delete', delConfirm:'Tap again to confirm', delOk:'Deleted', delNo:'You cannot delete that one', pinLbl:'Pin', pinOn:'Pin to top', pinOff:'Unpin', pinOk:'Pinned', pinUndo:'Unpinned', pinFail:'Something went wrong — please retry.', pinnedTag:'Pinned' },
-    ja: { title:'掲示板', lede:'感想や提案、質問などをどうぞ。アカウント登録は不要です。', nickPh:'お名前（任意）', textPh:'ひとことどうぞ…', send:'投稿', sending:'投稿中…', more:'もっと見る', empty:'まだコメントがありません。最初の一言をどうぞ。', loading:'読み込み中…', fail:'投稿できませんでした。しばらくしてからお試しください。', ok:'投稿しました。ありがとうございます！', anon:'匿名', fast:'投稿が早すぎます。数秒お待ちください。', need:'内容を入力してください。', count:'{n} 件のコメント', offline:'コメントを読み込めませんでした。再読み込みしてください。' , dev:'開発者', reserved:'「XUComer」は開発者専用の名前です。別の名前をお選びください。' , out:'ログアウト', rpl:'返信', rplPh:'返信を書く…', cd:'あと {n} 秒お待ちください。', ops:'操作', del:'削除', delConfirm:'もう一度押して確定', delOk:'削除しました', delNo:'このコメントは削除できません', pinLbl:'固定', pinOn:'トップに固定', pinOff:'固定を解除', pinOk:'固定しました', pinUndo:'固定を解除しました', pinFail:'操作に失敗しました。もう一度お試しください。', pinnedTag:'固定済み' },
-    ko: { title:'방명록', lede:'생각이나 제안, 질문을 남겨 주세요. 계정은 필요 없습니다.', nickPh:'어떻게 불러드릴까요? (선택)', textPh:'하고 싶은 말…', send:'등록', sending:'등록 중…', more:'더 보기', empty:'아직 댓글이 없습니다. 첫 글을 남겨 보세요.', loading:'불러오는 중…', fail:'등록하지 못했습니다. 잠시 후 다시 시도해 주세요.', ok:'등록했습니다. 감사합니다!', anon:'익명', fast:'너무 빠릅니다. 몇 초 후에 다시 시도해 주세요.', need:'내용을 입력해 주세요.', count:'댓글 {n}개', offline:'댓글을 불러오지 못했습니다. 새로고침해 주세요.' , dev:'개발자', reserved:'"XUComer"는 개발자 전용 이름입니다. 다른 이름을 써 주세요.' , out:'로그아웃', rpl:'답글', rplPh:'답글을 남겨 주세요…', cd:'{n}초 후에 다시 시도해 주세요.', ops:'추가 작업', del:'삭제', delConfirm:'한 번 더 눌러 확인', delOk:'삭제되었습니다', delNo:'이 댓글은 삭제할 수 없습니다', pinLbl:'고정', pinOn:'상단에 고정', pinOff:'고정 해제', pinOk:'고정되었습니다', pinUndo:'고정이 해제되었습니다', pinFail:'작업에 실패했습니다. 다시 시도해 주세요.', pinnedTag:'고정됨' },
-    fr: { title:"Livre d'or", lede:'Laissez une idée, une suggestion ou une question — aucun compte requis.', nickPh:'Comment vous appeler ? (facultatif)', textPh:'Dites quelque chose…', send:'Publier', sending:'Publication…', more:'Afficher plus', empty:"Aucun message pour l'instant — soyez le premier.", loading:'Chargement…', fail:'Publication impossible, réessayez plus tard.', ok:'Publié. Merci !', anon:'Anonyme', fast:'C\u2019est un peu rapide — attendez quelques secondes.', need:"Écrivez d'abord quelque chose.", count:'{n} messages', offline:'Impossible de charger les messages — actualisez la page.' , dev:'Développeur', reserved:'« XUComer » est réservé au développeur — choisissez un autre nom.' , out:'Déconnexion', rpl:'Répondre', rplPh:'Écrivez une réponse…', cd:'Attendez {n} s avant de republier.', ops:'Autres actions', del:'Supprimer', delConfirm:'Appuyez encore pour confirmer', delOk:'Supprimé', delNo:'Suppression impossible', pinLbl:'Épingler', pinOn:'Épingler en haut', pinOff:'Désépingler', pinOk:'Épinglé', pinUndo:'Épinglage annulé', pinFail:'Opération échouée — réessayez.', pinnedTag:'Épinglé' },
-    de: { title:'Gästebuch', lede:'Hinterlasse eine Idee, einen Vorschlag oder eine Frage — kein Konto nötig.', nickPh:'Wie sollen wir dich nennen? (optional)', textPh:'Schreib etwas…', send:'Absenden', sending:'Wird gesendet…', more:'Mehr laden', empty:'Noch keine Beiträge — sei die erste Person.', loading:'Wird geladen…', fail:'Senden fehlgeschlagen — bitte später erneut versuchen.', ok:'Gesendet. Danke!', anon:'Anonym', fast:'Etwas schnell — warte ein paar Sekunden.', need:'Bitte zuerst etwas schreiben.', count:'{n} Beiträge', offline:'Beiträge konnten nicht geladen werden — Seite neu laden.' , dev:'Entwickler', reserved:'"XUComer" ist dem Entwickler vorbehalten — bitte wähle einen anderen Namen.' , out:'Abmelden', rpl:'Antworten', rplPh:'Antwort schreiben…', cd:'Bitte {n} s warten.', ops:'Weitere Aktionen', del:'Löschen', delConfirm:'Noch einmal tippen zum Bestätigen', delOk:'Gelöscht', delNo:'Dieser Beitrag kann nicht gelöscht werden', pinLbl:'Anpinnen', pinOn:'Oben anpinnen', pinOff:'Anpinnen aufheben', pinOk:'Angepinnt', pinUndo:'Anpinnen aufgehoben', pinFail:'Fehlgeschlagen — bitte erneut versuchen.', pinnedTag:'Angepinnt' },
-    es: { title:'Libro de visitas', lede:'Deja una idea, una sugerencia o una pregunta: no hace falta cuenta.', nickPh:'¿Cómo te llamamos? (opcional)', textPh:'Escribe algo…', send:'Publicar', sending:'Publicando…', more:'Cargar más', empty:'Aún no hay comentarios: sé el primero.', loading:'Cargando…', fail:'No se pudo publicar; inténtalo más tarde.', ok:'Publicado. ¡Gracias!', anon:'Anónimo', fast:'Vas muy rápido; espera unos segundos.', need:'Escribe algo primero.', count:'{n} comentarios', offline:'No se pudieron cargar los comentarios; recarga la página.' , dev:'Desarrollador', reserved:'«XUComer» está reservado para el desarrollador; elige otro nombre.' , out:'Salir', rpl:'Responder', rplPh:'Escribe una respuesta…', cd:'Espera {n} s antes de volver a publicar.', ops:'Más acciones', del:'Eliminar', delConfirm:'Pulsa otra vez para confirmar', delOk:'Eliminado', delNo:'No se puede eliminar este comentario', pinLbl:'Fijar', pinOn:'Fijar arriba', pinOff:'Quitar fijado', pinOk:'Fijado', pinUndo:'Fijado quitado', pinFail:'La operación falló; inténtalo de nuevo.', pinnedTag:'Fijado' },
-    pt: { title:'Livro de visitas', lede:'Deixe uma ideia, sugestão ou pergunta — não precisa de conta.', nickPh:'Como devemos chamar você? (opcional)', textPh:'Escreva algo…', send:'Publicar', sending:'Publicando…', more:'Carregar mais', empty:'Ainda não há comentários — seja o primeiro.', loading:'Carregando…', fail:'Não foi possível publicar. Tente mais tarde.', ok:'Publicado. Obrigado!', anon:'Anônimo', fast:'Muito rápido — espere alguns segundos.', need:'Escreva algo primeiro.', count:'{n} comentários', offline:'Não foi possível carregar os comentários — recarregue a página.' , dev:'Desenvolvedor', reserved:'"XUComer" é reservado ao desenvolvedor — escolha outro nome.' , out:'Sair', rpl:'Responder', rplPh:'Escreva uma resposta…', cd:'Espere {n} s antes de publicar de novo.', ops:'Mais ações', del:'Excluir', delConfirm:'Toque novamente para confirmar', delOk:'Excluído', delNo:'Não é possível excluir este comentário', pinLbl:'Fixar', pinOn:'Fixar no topo', pinOff:'Desafixar', pinOk:'Fixado', pinUndo:'Fixação removida', pinFail:'A operação falhou — tente de novo.', pinnedTag:'Fixado' },
-    ru: { title:'Гостевая книга', lede:'Оставьте мысль, идею или вопрос — аккаунт не нужен.', nickPh:'Как вас называть? (необязательно)', textPh:'Напишите что-нибудь…', send:'Отправить', sending:'Отправка…', more:'Показать ещё', empty:'Комментариев пока нет — будьте первым.', loading:'Загрузка…', fail:'Не удалось отправить — попробуйте позже.', ok:'Отправлено. Спасибо!', anon:'Аноним', fast:'Слишком быстро — подождите несколько секунд.', need:'Сначала напишите что-нибудь.', count:'Комментариев: {n}', offline:'Не удалось загрузить комментарии — обновите страницу.' , dev:'Разработчик', reserved:'Имя «XUComer» зарезервировано за разработчиком — выберите другое.' , out:'Выйти', rpl:'Ответить', rplPh:'Напишите ответ…', cd:'Подождите {n} с.', ops:'Ещё действия', del:'Удалить', delConfirm:'Нажмите ещё раз для подтверждения', delOk:'Удалено', delNo:'Этот комментарий нельзя удалить', pinLbl:'Закрепить', pinOn:'Закрепить сверху', pinOff:'Открепить', pinOk:'Закреплено', pinUndo:'Закрепление снято', pinFail:'Не удалось выполнить — попробуйте снова.', pinnedTag:'Закреплено' },
-    it: { title:'Libro degli ospiti', lede:"Lascia un'idea, un suggerimento o una domanda: nessun account richiesto.", nickPh:'Come ti chiamiamo? (facoltativo)', textPh:'Scrivi qualcosa…', send:'Pubblica', sending:'Pubblicazione…', more:'Carica altro', empty:'Nessun commento — scrivi il primo.', loading:'Caricamento…', fail:'Pubblicazione non riuscita, riprova più tardi.', ok:'Pubblicato. Grazie!', anon:'Anonimo', fast:'Troppo veloce: attendi qualche secondo.', need:'Scrivi prima qualcosa.', count:'{n} commenti', offline:'Impossibile caricare i commenti: ricarica la pagina.' , dev:'Sviluppatore', reserved:'"XUComer" è riservato allo sviluppatore: scegli un altro nome.' , out:'Esci', rpl:'Rispondi', rplPh:'Scrivi una risposta…', cd:'Attendi {n} s prima di pubblicare.', ops:'Altre azioni', del:'Elimina', delConfirm:'Premi di nuovo per confermare', delOk:'Eliminato', delNo:'Questo commento non può essere eliminato', pinLbl:'Fissa', pinOn:'Fissa in alto', pinOff:'Togli il fissaggio', pinOk:'Fissato', pinUndo:'Fissaggio rimosso', pinFail:'Operazione non riuscita — riprova.', pinnedTag:'Fissato' },
-    nl: { title:'Gastenboek', lede:'Laat een idee, suggestie of vraag achter — geen account nodig.', nickPh:'Hoe mogen we je noemen? (optioneel)', textPh:'Schrijf iets…', send:'Plaatsen', sending:'Bezig met plaatsen…', more:'Meer laden', empty:'Nog geen berichten — wees de eerste.', loading:'Laden…', fail:'Plaatsen mislukt — probeer het later opnieuw.', ok:'Geplaatst. Bedankt!', anon:'Anoniem', fast:'Dat ging snel — wacht een paar seconden.', need:'Schrijf eerst iets.', count:'{n} berichten', offline:'Berichten konden niet worden geladen — ververs de pagina.' , dev:'Ontwikkelaar', reserved:'"XUComer" is gereserveerd voor de ontwikkelaar — kies een andere naam.' , out:'Uitloggen', rpl:'Antwoorden', rplPh:'Schrijf een antwoord…', cd:'Wacht {n} s voor je opnieuw plaatst.', ops:'Meer acties', del:'Verwijderen', delConfirm:'Nogmaals tikken om te bevestigen', delOk:'Verwijderd', delNo:'Dit bericht kan niet worden verwijderd', pinLbl:'Vastzetten', pinOn:'Bovenaan vastzetten', pinOff:'Vastzetting opheffen', pinOk:'Vastgezet', pinUndo:'Vastzetting opgeheven', pinFail:'Mislukt — probeer het opnieuw.', pinnedTag:'Vastgezet' },
-    pl: { title:'Księga gości', lede:'Zostaw myśl, pomysł albo pytanie — konto nie jest potrzebne.', nickPh:'Jak mamy cię nazywać? (opcjonalnie)', textPh:'Napisz coś…', send:'Opublikuj', sending:'Publikowanie…', more:'Wczytaj więcej', empty:'Brak komentarzy — napisz pierwszy.', loading:'Wczytywanie…', fail:'Nie udało się opublikować — spróbuj później.', ok:'Opublikowano. Dziękujemy!', anon:'Anonim', fast:'Trochę za szybko — poczekaj kilka sekund.', need:'Najpierw coś napisz.', count:'Komentarze: {n}', offline:'Nie udało się wczytać komentarzy — odśwież stronę.' , dev:'Twórca', reserved:'Nazwa "XUComer" jest zarezerwowana dla twórcy — wybierz inną.' , out:'Wyloguj', rpl:'Odpowiedz', rplPh:'Napisz odpowiedź…', cd:'Poczekaj {n} s.', ops:'Więcej akcji', del:'Usuń', delConfirm:'Naciśnij ponownie, aby potwierdzić', delOk:'Usunięto', delNo:'Nie można usunąć tego komentarza', pinLbl:'Przypnij', pinOn:'Przypnij na górze', pinOff:'Odepnij', pinOk:'Przypięto', pinUndo:'Przypięcie usunięte', pinFail:'Nie udało się — spróbuj ponownie.', pinnedTag:'Przypięty' },
-    tr: { title:'Konuk defteri', lede:'Bir fikir, öneri ya da soru bırak — hesap gerekmez.', nickPh:'Sana nasıl hitap edelim? (isteğe bağlı)', textPh:'Bir şeyler yaz…', send:'Gönder', sending:'Gönderiliyor…', more:'Daha fazla yükle', empty:'Henüz yorum yok — ilkini sen yaz.', loading:'Yükleniyor…', fail:'Gönderilemedi — lütfen sonra tekrar dene.', ok:'Gönderildi. Teşekkürler!', anon:'Anonim', fast:'Biraz hızlı oldu — birkaç saniye bekle.', need:'Önce bir şeyler yaz.', count:'{n} yorum', offline:'Yorumlar yüklenemedi — sayfayı yenile.' , dev:'Geliştirici', reserved:'"XUComer" geliştiriciye ayrılmıştır — lütfen başka bir ad seçin.' , out:'Çıkış', rpl:'Yanıtla', rplPh:'Bir yanıt yaz…', cd:'Yeniden göndermek için {n} sn bekle.', ops:'Daha fazla işlem', del:'Sil', delConfirm:'Onaylamak için tekrar dokun', delOk:'Silindi', delNo:'Bu yorum silinemiyor', pinLbl:'Sabitle', pinOn:'Üste sabitle', pinOff:'Sabitlemeyi kaldır', pinOk:'Sabitlendi', pinUndo:'Sabitleme kaldırıldı', pinFail:'İşlem başarısız — tekrar deneyin.', pinnedTag:'Sabitlendi' },
-    ar: { title:'لوحة الزوار', lede:'اترك فكرة أو اقتراحًا أو سؤالًا — لا حاجة إلى حساب.', nickPh:'بماذا نناديك؟ (اختياري)', textPh:'اكتب شيئًا…', send:'نشر', sending:'جارٍ النشر…', more:'تحميل المزيد', empty:'لا توجد تعليقات بعد — كن الأول.', loading:'جارٍ التحميل…', fail:'تعذّر النشر — حاول لاحقًا.', ok:'تم النشر. شكرًا!', anon:'مجهول', fast:'كان ذلك سريعًا — انتظر بضع ثوانٍ.', need:'اكتب شيئًا أولًا.', count:'{n} تعليق', offline:'تعذّر تحميل التعليقات — أعد تحميل الصفحة.' , dev:'المطور', reserved:'الاسم "XUComer" مخصص للمطور — الرجاء اختيار اسم آخر.' , out:'تسجيل الخروج', rpl:'رد', rplPh:'اكتب ردًا…', cd:'انتظر {n} ثانية قبل النشر مجددًا.', ops:'إجراءات أخرى', del:'حذف', delConfirm:'اضغط مرة أخرى للتأكيد', delOk:'تم الحذف', delNo:'لا يمكن حذف هذا التعليق', pinLbl:'تثبيت', pinOn:'تثبيت في الأعلى', pinOff:'إلغاء التثبيت', pinOk:'تم التثبيت', pinUndo:'تم إلغاء التثبيت', pinFail:'تعذر تنفيذ الإجراء — حاول مرة أخرى.', pinnedTag:'مثبت' },
-    th: { title:'สมุดเยี่ยมชม', lede:'ฝากความคิด ข้อเสนอ หรือคำถามไว้ได้เลย ไม่ต้องมีบัญชี', nickPh:'ให้เราเรียกคุณว่าอะไร (ไม่บังคับ)', textPh:'เขียนอะไรสักหน่อย…', send:'โพสต์', sending:'กำลังโพสต์…', more:'โหลดเพิ่มเติม', empty:'ยังไม่มีความคิดเห็น มาเป็นคนแรกกัน', loading:'กำลังโหลด…', fail:'โพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง', ok:'โพสต์แล้ว ขอบคุณ!', anon:'ไม่ระบุชื่อ', fast:'เร็วไปนิด รอสักสองสามวินาที', need:'เขียนอะไรก่อนนะ', count:'{n} ความคิดเห็น', offline:'โหลดความคิดเห็นไม่สำเร็จ รีเฟรชหน้า' , dev:'ผู้พัฒนา', reserved:'ชื่อ "XUComer" สงวนไว้สำหรับผู้พัฒนา กรุณาใช้ชื่ออื่น' , out:'ออกจากระบบ', rpl:'ตอบกลับ', rplPh:'เขียนคำตอบ…', cd:'รออีก {n} วินาทีก่อนโพสต์อีกครั้ง', ops:'การกระทำเพิ่มเติม', del:'ลบ', delConfirm:'แตะอีกครั้งเพื่อยืนยัน', delOk:'ลบแล้ว', delNo:'ไม่สามารถลบความคิดเห็นนี้ได้', pinLbl:'ปักหมุด', pinOn:'ปักหมุดไว้ด้านบน', pinOff:'ยกเลิกปักหมุด', pinOk:'ปักหมุดแล้ว', pinUndo:'ยกเลิกปักหมุดแล้ว', pinFail:'ทำไม่สำเร็จ ลองใหม่', pinnedTag:'ปักหมุดแล้ว' },
-    vi: { title:'Sổ lưu bút', lede:'Để lại suy nghĩ, góp ý hoặc câu hỏi — không cần tài khoản.', nickPh:'Gọi bạn là gì? (không bắt buộc)', textPh:'Viết gì đó…', send:'Đăng', sending:'Đang đăng…', more:'Tải thêm', empty:'Chưa có bình luận — hãy là người đầu tiên.', loading:'Đang tải…', fail:'Không đăng được — vui lòng thử lại sau.', ok:'Đã đăng. Cảm ơn!', anon:'Ẩn danh', fast:'Hơi nhanh — đợi vài giây nhé.', need:'Hãy viết gì đó trước.', count:'{n} bình luận', offline:'Không tải được bình luận — tải lại trang.' , dev:'Nhà phát triển', reserved:'"XUComer" là tên dành riêng cho nhà phát triển — hãy chọn tên khác.' , out:'Đăng xuất', rpl:'Trả lời', rplPh:'Viết phản hồi…', cd:'Đợi {n} giây trước khi đăng lại.', ops:'Thao tác khác', del:'Xóa', delConfirm:'Nhấn lại để xác nhận', delOk:'Đã xóa', delNo:'Không thể xóa bình luận này', pinLbl:'Ghim', pinOn:'Ghim lên đầu', pinOff:'Bỏ ghim', pinOk:'Đã ghim', pinUndo:'Đã bỏ ghim', pinFail:'Thao tác thất bại — thử lại sau.', pinnedTag:'Đã ghim' },
-    id: { title:'Buku tamu', lede:'Tinggalkan ide, saran, atau pertanyaan — tanpa akun.', nickPh:'Kami panggil kamu apa? (opsional)', textPh:'Tulis sesuatu…', send:'Kirim', sending:'Mengirim…', more:'Muat lagi', empty:'Belum ada komentar — jadilah yang pertama.', loading:'Memuat…', fail:'Gagal mengirim — coba lagi nanti.', ok:'Terkirim. Terima kasih!', anon:'Anonim', fast:'Terlalu cepat — tunggu beberapa detik.', need:'Tulis sesuatu dulu.', count:'{n} komentar', offline:'Gagal memuat komentar — muat ulang halaman.', dev:'Pengembang', reserved:'Nama "XUComer" khusus untuk pengembang — silakan pilih nama lain.' , out:'Keluar', rpl:'Balas', rplPh:'Tulis balasan…', cd:'Tunggu {n} detik sebelum mengirim lagi.', ops:'Tindakan lain', del:'Hapus', delConfirm:'Ketuk lagi untuk mengonfirmasi', delOk:'Dihapus', delNo:'Komentar ini tidak dapat dihapus', pinLbl:'Sematkan', pinOn:'Sematkan di atas', pinOff:'Batal semat', pinOk:'Disematkan', pinUndo:'Semat dibatalkan', pinFail:'Gagal — coba lagi.', pinnedTag:'Disematkan' }
+    zh_CN: { title:'留言板', lede:'留下你的想法、建议或问题，不需要注册账号。', nickPh:'怎么称呼你？（选填）', textPh:'想说点什么…', send:'发表', sending:'发表中…', more:'加载更多', empty:'还没有留言，来说第一句吧。', loading:'加载中…', fail:'发表失败，请稍后再试。', ok:'发表成功，谢谢！', anon:'匿名', fast:'发得有点快，请等几秒再试。', need:'请先写点内容。', count:'{n} 条留言', offline:'留言加载失败，请刷新页面重试。' , dev:'开发者', reserved:'「XUComer」是开发者专属昵称，请换一个。' , out:'退出登录', rpl:'回复', rplPh:'写下你的回复…', cd:'请等 {n} 秒再发送。', ops:'更多操作', del:'删除', delConfirm:'再点一次确认删除', delOk:'已删除', delNo:'删不掉这条留言', pinLbl:'置顶', pinOn:'置顶到最前', pinOff:'取消置顶', pinOk:'已置顶', pinUndo:'已取消置顶', pinFail:'操作失败，请稍后再试。',  ava:'头像', avaDel:'移除头像', avaBad:'这张图片读不出来，换一张试试。', avaBig:'图片太大了，换一张小一点的。', pinnedTag:'置顶' },
+    zh_TW: { title:'留言板', lede:'留下你的想法、建議或問題，不需要註冊帳號。', nickPh:'怎麼稱呼你？（選填）', textPh:'想說點什麼…', send:'發表', sending:'發表中…', more:'載入更多', empty:'還沒有留言，來說第一句吧。', loading:'載入中…', fail:'發表失敗，請稍後再試。', ok:'發表成功，謝謝！', anon:'匿名', fast:'發得有點快，請等幾秒再試。', need:'請先寫點內容。', count:'{n} 則留言', offline:'留言載入失敗，請重新整理頁面再試。' , dev:'開發者', reserved:'「XUComer」是開發者專屬暱稱，請換一個。' , out:'登出', rpl:'回覆', rplPh:'寫下你的回覆…', cd:'請等 {n} 秒後再發送。', ops:'更多操作', del:'刪除', delConfirm:'再點一次確認刪除', delOk:'已刪除', delNo:'刪不掉這則留言', pinLbl:'置頂', pinOn:'置頂到最前', pinOff:'取消置頂', pinOk:'已置頂', pinUndo:'已取消置頂', pinFail:'操作失敗，請稍後再試。',  ava:'頭像', avaDel:'移除頭像', avaBad:'這張圖片讀不出來，換一張試試。', avaBig:'圖片太大了，換一張小一點的。', pinnedTag:'置頂' },
+    en: { title:'Guestbook', lede:'Leave a thought, an idea or a question — no account needed.', nickPh:'What should we call you? (optional)', textPh:'Say something…', send:'Post', sending:'Posting…', more:'Load more', empty:'No comments yet — be the first.', loading:'Loading…', fail:"Couldn't post — please try again.", ok:'Posted. Thanks!', anon:'Anonymous', fast:'That was quick — wait a few seconds.', need:'Please write something first.', count:'{n} comments', offline:"Couldn't load comments — refresh and try again." , dev:'Developer', reserved:'"XUComer" is reserved for the developer — please pick another name.' , out:'Log out', rpl:'Reply', rplPh:'Write a reply…', cd:'Wait {n}s before posting again.', ops:'More actions', del:'Delete', delConfirm:'Tap again to confirm', delOk:'Deleted', delNo:'You cannot delete that one', pinLbl:'Pin', pinOn:'Pin to top', pinOff:'Unpin', pinOk:'Pinned', pinUndo:'Unpinned', pinFail:'Something went wrong — please retry.',  ava:'Avatar', avaDel:'Remove avatar', avaBad:'That image cannot be read — try another one.', avaBig:'That image is too big — pick a smaller one.', pinnedTag:'Pinned' },
+    ja: { title:'掲示板', lede:'感想や提案、質問などをどうぞ。アカウント登録は不要です。', nickPh:'お名前（任意）', textPh:'ひとことどうぞ…', send:'投稿', sending:'投稿中…', more:'もっと見る', empty:'まだコメントがありません。最初の一言をどうぞ。', loading:'読み込み中…', fail:'投稿できませんでした。しばらくしてからお試しください。', ok:'投稿しました。ありがとうございます！', anon:'匿名', fast:'投稿が早すぎます。数秒お待ちください。', need:'内容を入力してください。', count:'{n} 件のコメント', offline:'コメントを読み込めませんでした。再読み込みしてください。' , dev:'開発者', reserved:'「XUComer」は開発者専用の名前です。別の名前をお選びください。' , out:'ログアウト', rpl:'返信', rplPh:'返信を書く…', cd:'あと {n} 秒お待ちください。', ops:'操作', del:'削除', delConfirm:'もう一度押して確定', delOk:'削除しました', delNo:'このコメントは削除できません', pinLbl:'固定', pinOn:'トップに固定', pinOff:'固定を解除', pinOk:'固定しました', pinUndo:'固定を解除しました', pinFail:'操作に失敗しました。もう一度お試しください。',  ava:'アイコン', avaDel:'アイコンを削除', avaBad:'この画像は読み込めません。別の画像をお試しください。', avaBig:'画像が大きすぎます。もう少し小さいものを選んでください。', pinnedTag:'固定済み' },
+    ko: { title:'방명록', lede:'생각이나 제안, 질문을 남겨 주세요. 계정은 필요 없습니다.', nickPh:'어떻게 불러드릴까요? (선택)', textPh:'하고 싶은 말…', send:'등록', sending:'등록 중…', more:'더 보기', empty:'아직 댓글이 없습니다. 첫 글을 남겨 보세요.', loading:'불러오는 중…', fail:'등록하지 못했습니다. 잠시 후 다시 시도해 주세요.', ok:'등록했습니다. 감사합니다!', anon:'익명', fast:'너무 빠릅니다. 몇 초 후에 다시 시도해 주세요.', need:'내용을 입력해 주세요.', count:'댓글 {n}개', offline:'댓글을 불러오지 못했습니다. 새로고침해 주세요.' , dev:'개발자', reserved:'"XUComer"는 개발자 전용 이름입니다. 다른 이름을 써 주세요.' , out:'로그아웃', rpl:'답글', rplPh:'답글을 남겨 주세요…', cd:'{n}초 후에 다시 시도해 주세요.', ops:'추가 작업', del:'삭제', delConfirm:'한 번 더 눌러 확인', delOk:'삭제되었습니다', delNo:'이 댓글은 삭제할 수 없습니다', pinLbl:'고정', pinOn:'상단에 고정', pinOff:'고정 해제', pinOk:'고정되었습니다', pinUndo:'고정이 해제되었습니다', pinFail:'작업에 실패했습니다. 다시 시도해 주세요.',  ava:'프로필', avaDel:'프로필 삭제', avaBad:'이 이미지는 읽을 수 없습니다. 다른 이미지를 사용해 보세요.', avaBig:'이미지가 너무 큽니다. 더 작은 이미지를 선택해 주세요.', pinnedTag:'고정됨' },
+    fr: { title:"Livre d'or", lede:'Laissez une idée, une suggestion ou une question — aucun compte requis.', nickPh:'Comment vous appeler ? (facultatif)', textPh:'Dites quelque chose…', send:'Publier', sending:'Publication…', more:'Afficher plus', empty:"Aucun message pour l'instant — soyez le premier.", loading:'Chargement…', fail:'Publication impossible, réessayez plus tard.', ok:'Publié. Merci !', anon:'Anonyme', fast:'C\u2019est un peu rapide — attendez quelques secondes.', need:"Écrivez d'abord quelque chose.", count:'{n} messages', offline:'Impossible de charger les messages — actualisez la page.' , dev:'Développeur', reserved:'« XUComer » est réservé au développeur — choisissez un autre nom.' , out:'Déconnexion', rpl:'Répondre', rplPh:'Écrivez une réponse…', cd:'Attendez {n} s avant de republier.', ops:'Autres actions', del:'Supprimer', delConfirm:'Appuyez encore pour confirmer', delOk:'Supprimé', delNo:'Suppression impossible', pinLbl:'Épingler', pinOn:'Épingler en haut', pinOff:'Désépingler', pinOk:'Épinglé', pinUndo:'Épinglage annulé', pinFail:'Opération échouée — réessayez.',  ava:'Avatar', avaDel:'Retirer avatar', avaBad:'Image illisible — essayez-en une autre.', avaBig:'Image trop lourde — choisissez-en une plus petite.', pinnedTag:'Épinglé' },
+    de: { title:'Gästebuch', lede:'Hinterlasse eine Idee, einen Vorschlag oder eine Frage — kein Konto nötig.', nickPh:'Wie sollen wir dich nennen? (optional)', textPh:'Schreib etwas…', send:'Absenden', sending:'Wird gesendet…', more:'Mehr laden', empty:'Noch keine Beiträge — sei die erste Person.', loading:'Wird geladen…', fail:'Senden fehlgeschlagen — bitte später erneut versuchen.', ok:'Gesendet. Danke!', anon:'Anonym', fast:'Etwas schnell — warte ein paar Sekunden.', need:'Bitte zuerst etwas schreiben.', count:'{n} Beiträge', offline:'Beiträge konnten nicht geladen werden — Seite neu laden.' , dev:'Entwickler', reserved:'"XUComer" ist dem Entwickler vorbehalten — bitte wähle einen anderen Namen.' , out:'Abmelden', rpl:'Antworten', rplPh:'Antwort schreiben…', cd:'Bitte {n} s warten.', ops:'Weitere Aktionen', del:'Löschen', delConfirm:'Noch einmal tippen zum Bestätigen', delOk:'Gelöscht', delNo:'Dieser Beitrag kann nicht gelöscht werden', pinLbl:'Anpinnen', pinOn:'Oben anpinnen', pinOff:'Anpinnen aufheben', pinOk:'Angepinnt', pinUndo:'Anpinnen aufgehoben', pinFail:'Fehlgeschlagen — bitte erneut versuchen.',  ava:'Profilbild', avaDel:'Profilbild entfernen', avaBad:'Das Bild kann nicht gelesen werden — nimm ein anderes.', avaBig:'Das Bild ist zu groß — nimm ein kleineres.', pinnedTag:'Angepinnt' },
+    es: { title:'Libro de visitas', lede:'Deja una idea, una sugerencia o una pregunta: no hace falta cuenta.', nickPh:'¿Cómo te llamamos? (opcional)', textPh:'Escribe algo…', send:'Publicar', sending:'Publicando…', more:'Cargar más', empty:'Aún no hay comentarios: sé el primero.', loading:'Cargando…', fail:'No se pudo publicar; inténtalo más tarde.', ok:'Publicado. ¡Gracias!', anon:'Anónimo', fast:'Vas muy rápido; espera unos segundos.', need:'Escribe algo primero.', count:'{n} comentarios', offline:'No se pudieron cargar los comentarios; recarga la página.' , dev:'Desarrollador', reserved:'«XUComer» está reservado para el desarrollador; elige otro nombre.' , out:'Salir', rpl:'Responder', rplPh:'Escribe una respuesta…', cd:'Espera {n} s antes de volver a publicar.', ops:'Más acciones', del:'Eliminar', delConfirm:'Pulsa otra vez para confirmar', delOk:'Eliminado', delNo:'No se puede eliminar este comentario', pinLbl:'Fijar', pinOn:'Fijar arriba', pinOff:'Quitar fijado', pinOk:'Fijado', pinUndo:'Fijado quitado', pinFail:'La operación falló; inténtalo de nuevo.',  ava:'Avatar', avaDel:'Quitar avatar', avaBad:'No se puede leer esa imagen: prueba con otra.', avaBig:'La imagen es demasiado grande: elige una más pequeña.', pinnedTag:'Fijado' },
+    pt: { title:'Livro de visitas', lede:'Deixe uma ideia, sugestão ou pergunta — não precisa de conta.', nickPh:'Como devemos chamar você? (opcional)', textPh:'Escreva algo…', send:'Publicar', sending:'Publicando…', more:'Carregar mais', empty:'Ainda não há comentários — seja o primeiro.', loading:'Carregando…', fail:'Não foi possível publicar. Tente mais tarde.', ok:'Publicado. Obrigado!', anon:'Anônimo', fast:'Muito rápido — espere alguns segundos.', need:'Escreva algo primeiro.', count:'{n} comentários', offline:'Não foi possível carregar os comentários — recarregue a página.' , dev:'Desenvolvedor', reserved:'"XUComer" é reservado ao desenvolvedor — escolha outro nome.' , out:'Sair', rpl:'Responder', rplPh:'Escreva uma resposta…', cd:'Espere {n} s antes de publicar de novo.', ops:'Mais ações', del:'Excluir', delConfirm:'Toque novamente para confirmar', delOk:'Excluído', delNo:'Não é possível excluir este comentário', pinLbl:'Fixar', pinOn:'Fixar no topo', pinOff:'Desafixar', pinOk:'Fixado', pinUndo:'Fixação removida', pinFail:'A operação falhou — tente de novo.',  ava:'Avatar', avaDel:'Remover avatar', avaBad:'Não foi possível ler essa imagem — tente outra.', avaBig:'A imagem é grande demais — escolha uma menor.', pinnedTag:'Fixado' },
+    ru: { title:'Гостевая книга', lede:'Оставьте мысль, идею или вопрос — аккаунт не нужен.', nickPh:'Как вас называть? (необязательно)', textPh:'Напишите что-нибудь…', send:'Отправить', sending:'Отправка…', more:'Показать ещё', empty:'Комментариев пока нет — будьте первым.', loading:'Загрузка…', fail:'Не удалось отправить — попробуйте позже.', ok:'Отправлено. Спасибо!', anon:'Аноним', fast:'Слишком быстро — подождите несколько секунд.', need:'Сначала напишите что-нибудь.', count:'Комментариев: {n}', offline:'Не удалось загрузить комментарии — обновите страницу.' , dev:'Разработчик', reserved:'Имя «XUComer» зарезервировано за разработчиком — выберите другое.' , out:'Выйти', rpl:'Ответить', rplPh:'Напишите ответ…', cd:'Подождите {n} с.', ops:'Ещё действия', del:'Удалить', delConfirm:'Нажмите ещё раз для подтверждения', delOk:'Удалено', delNo:'Этот комментарий нельзя удалить', pinLbl:'Закрепить', pinOn:'Закрепить сверху', pinOff:'Открепить', pinOk:'Закреплено', pinUndo:'Закрепление снято', pinFail:'Не удалось выполнить — попробуйте снова.',  ava:'Аватар', avaDel:'Убрать аватар', avaBad:'Не удалось прочитать изображение — попробуйте другое.', avaBig:'Изображение слишком большое — выберите поменьше.', pinnedTag:'Закреплено' },
+    it: { title:'Libro degli ospiti', lede:"Lascia un'idea, un suggerimento o una domanda: nessun account richiesto.", nickPh:'Come ti chiamiamo? (facoltativo)', textPh:'Scrivi qualcosa…', send:'Pubblica', sending:'Pubblicazione…', more:'Carica altro', empty:'Nessun commento — scrivi il primo.', loading:'Caricamento…', fail:'Pubblicazione non riuscita, riprova più tardi.', ok:'Pubblicato. Grazie!', anon:'Anonimo', fast:'Troppo veloce: attendi qualche secondo.', need:'Scrivi prima qualcosa.', count:'{n} commenti', offline:'Impossibile caricare i commenti: ricarica la pagina.' , dev:'Sviluppatore', reserved:'"XUComer" è riservato allo sviluppatore: scegli un altro nome.' , out:'Esci', rpl:'Rispondi', rplPh:'Scrivi una risposta…', cd:'Attendi {n} s prima di pubblicare.', ops:'Altre azioni', del:'Elimina', delConfirm:'Premi di nuovo per confermare', delOk:'Eliminato', delNo:'Questo commento non può essere eliminato', pinLbl:'Fissa', pinOn:'Fissa in alto', pinOff:'Togli il fissaggio', pinOk:'Fissato', pinUndo:'Fissaggio rimosso', pinFail:'Operazione non riuscita — riprova.',  ava:'Avatar', avaDel:'Rimuovi avatar', avaBad:'Non riesco a leggere questa immagine: provane un altra.', avaBig:'Immagine troppo grande: scegline una piu piccola.', pinnedTag:'Fissato' },
+    nl: { title:'Gastenboek', lede:'Laat een idee, suggestie of vraag achter — geen account nodig.', nickPh:'Hoe mogen we je noemen? (optioneel)', textPh:'Schrijf iets…', send:'Plaatsen', sending:'Bezig met plaatsen…', more:'Meer laden', empty:'Nog geen berichten — wees de eerste.', loading:'Laden…', fail:'Plaatsen mislukt — probeer het later opnieuw.', ok:'Geplaatst. Bedankt!', anon:'Anoniem', fast:'Dat ging snel — wacht een paar seconden.', need:'Schrijf eerst iets.', count:'{n} berichten', offline:'Berichten konden niet worden geladen — ververs de pagina.' , dev:'Ontwikkelaar', reserved:'"XUComer" is gereserveerd voor de ontwikkelaar — kies een andere naam.' , out:'Uitloggen', rpl:'Antwoorden', rplPh:'Schrijf een antwoord…', cd:'Wacht {n} s voor je opnieuw plaatst.', ops:'Meer acties', del:'Verwijderen', delConfirm:'Nogmaals tikken om te bevestigen', delOk:'Verwijderd', delNo:'Dit bericht kan niet worden verwijderd', pinLbl:'Vastzetten', pinOn:'Bovenaan vastzetten', pinOff:'Vastzetting opheffen', pinOk:'Vastgezet', pinUndo:'Vastzetting opgeheven', pinFail:'Mislukt — probeer het opnieuw.',  ava:'Profielfoto', avaDel:'Profielfoto verwijderen', avaBad:'Deze afbeelding kan niet worden gelezen — probeer een andere.', avaBig:'De afbeelding is te groot — kies een kleinere.', pinnedTag:'Vastgezet' },
+    pl: { title:'Księga gości', lede:'Zostaw myśl, pomysł albo pytanie — konto nie jest potrzebne.', nickPh:'Jak mamy cię nazywać? (opcjonalnie)', textPh:'Napisz coś…', send:'Opublikuj', sending:'Publikowanie…', more:'Wczytaj więcej', empty:'Brak komentarzy — napisz pierwszy.', loading:'Wczytywanie…', fail:'Nie udało się opublikować — spróbuj później.', ok:'Opublikowano. Dziękujemy!', anon:'Anonim', fast:'Trochę za szybko — poczekaj kilka sekund.', need:'Najpierw coś napisz.', count:'Komentarze: {n}', offline:'Nie udało się wczytać komentarzy — odśwież stronę.' , dev:'Twórca', reserved:'Nazwa "XUComer" jest zarezerwowana dla twórcy — wybierz inną.' , out:'Wyloguj', rpl:'Odpowiedz', rplPh:'Napisz odpowiedź…', cd:'Poczekaj {n} s.', ops:'Więcej akcji', del:'Usuń', delConfirm:'Naciśnij ponownie, aby potwierdzić', delOk:'Usunięto', delNo:'Nie można usunąć tego komentarza', pinLbl:'Przypnij', pinOn:'Przypnij na górze', pinOff:'Odepnij', pinOk:'Przypięto', pinUndo:'Przypięcie usunięte', pinFail:'Nie udało się — spróbuj ponownie.',  ava:'Awatar', avaDel:'Usuń awatar', avaBad:'Nie udało się odczytać tego obrazu — spróbuj innego.', avaBig:'Obraz jest za duży — wybierz mniejszy.', pinnedTag:'Przypięty' },
+    tr: { title:'Konuk defteri', lede:'Bir fikir, öneri ya da soru bırak — hesap gerekmez.', nickPh:'Sana nasıl hitap edelim? (isteğe bağlı)', textPh:'Bir şeyler yaz…', send:'Gönder', sending:'Gönderiliyor…', more:'Daha fazla yükle', empty:'Henüz yorum yok — ilkini sen yaz.', loading:'Yükleniyor…', fail:'Gönderilemedi — lütfen sonra tekrar dene.', ok:'Gönderildi. Teşekkürler!', anon:'Anonim', fast:'Biraz hızlı oldu — birkaç saniye bekle.', need:'Önce bir şeyler yaz.', count:'{n} yorum', offline:'Yorumlar yüklenemedi — sayfayı yenile.' , dev:'Geliştirici', reserved:'"XUComer" geliştiriciye ayrılmıştır — lütfen başka bir ad seçin.' , out:'Çıkış', rpl:'Yanıtla', rplPh:'Bir yanıt yaz…', cd:'Yeniden göndermek için {n} sn bekle.', ops:'Daha fazla işlem', del:'Sil', delConfirm:'Onaylamak için tekrar dokun', delOk:'Silindi', delNo:'Bu yorum silinemiyor', pinLbl:'Sabitle', pinOn:'Üste sabitle', pinOff:'Sabitlemeyi kaldır', pinOk:'Sabitlendi', pinUndo:'Sabitleme kaldırıldı', pinFail:'İşlem başarısız — tekrar deneyin.',  ava:'Profil', avaDel:'Profili kaldır', avaBad:'Bu görsel okunamadı — başka bir tane dene.', avaBig:'Görsel çok büyük — daha küçük bir tane seç.', pinnedTag:'Sabitlendi' },
+    ar: { title:'لوحة الزوار', lede:'اترك فكرة أو اقتراحًا أو سؤالًا — لا حاجة إلى حساب.', nickPh:'بماذا نناديك؟ (اختياري)', textPh:'اكتب شيئًا…', send:'نشر', sending:'جارٍ النشر…', more:'تحميل المزيد', empty:'لا توجد تعليقات بعد — كن الأول.', loading:'جارٍ التحميل…', fail:'تعذّر النشر — حاول لاحقًا.', ok:'تم النشر. شكرًا!', anon:'مجهول', fast:'كان ذلك سريعًا — انتظر بضع ثوانٍ.', need:'اكتب شيئًا أولًا.', count:'{n} تعليق', offline:'تعذّر تحميل التعليقات — أعد تحميل الصفحة.' , dev:'المطور', reserved:'الاسم "XUComer" مخصص للمطور — الرجاء اختيار اسم آخر.' , out:'تسجيل الخروج', rpl:'رد', rplPh:'اكتب ردًا…', cd:'انتظر {n} ثانية قبل النشر مجددًا.', ops:'إجراءات أخرى', del:'حذف', delConfirm:'اضغط مرة أخرى للتأكيد', delOk:'تم الحذف', delNo:'لا يمكن حذف هذا التعليق', pinLbl:'تثبيت', pinOn:'تثبيت في الأعلى', pinOff:'إلغاء التثبيت', pinOk:'تم التثبيت', pinUndo:'تم إلغاء التثبيت', pinFail:'تعذر تنفيذ الإجراء — حاول مرة أخرى.',  ava:'الصورة', avaDel:'إزالة الصورة', avaBad:'تعذّر قراءة هذه الصورة — جرّب صورة أخرى.', avaBig:'الصورة كبيرة جدًا — اختر صورة أصغر.', pinnedTag:'مثبت' },
+    th: { title:'สมุดเยี่ยมชม', lede:'ฝากความคิด ข้อเสนอ หรือคำถามไว้ได้เลย ไม่ต้องมีบัญชี', nickPh:'ให้เราเรียกคุณว่าอะไร (ไม่บังคับ)', textPh:'เขียนอะไรสักหน่อย…', send:'โพสต์', sending:'กำลังโพสต์…', more:'โหลดเพิ่มเติม', empty:'ยังไม่มีความคิดเห็น มาเป็นคนแรกกัน', loading:'กำลังโหลด…', fail:'โพสต์ไม่สำเร็จ ลองใหม่อีกครั้ง', ok:'โพสต์แล้ว ขอบคุณ!', anon:'ไม่ระบุชื่อ', fast:'เร็วไปนิด รอสักสองสามวินาที', need:'เขียนอะไรก่อนนะ', count:'{n} ความคิดเห็น', offline:'โหลดความคิดเห็นไม่สำเร็จ รีเฟรชหน้า' , dev:'ผู้พัฒนา', reserved:'ชื่อ "XUComer" สงวนไว้สำหรับผู้พัฒนา กรุณาใช้ชื่ออื่น' , out:'ออกจากระบบ', rpl:'ตอบกลับ', rplPh:'เขียนคำตอบ…', cd:'รออีก {n} วินาทีก่อนโพสต์อีกครั้ง', ops:'การกระทำเพิ่มเติม', del:'ลบ', delConfirm:'แตะอีกครั้งเพื่อยืนยัน', delOk:'ลบแล้ว', delNo:'ไม่สามารถลบความคิดเห็นนี้ได้', pinLbl:'ปักหมุด', pinOn:'ปักหมุดไว้ด้านบน', pinOff:'ยกเลิกปักหมุด', pinOk:'ปักหมุดแล้ว', pinUndo:'ยกเลิกปักหมุดแล้ว', pinFail:'ทำไม่สำเร็จ ลองใหม่',  ava:'รูปโปรไฟล์', avaDel:'ลบรูปโปรไฟล์', avaBad:'อ่านรูปนี้ไม่ได้ ลองรูปอื่น', avaBig:'รูปใหญ่เกินไป เลือกรูปที่เล็กกว่านี้', pinnedTag:'ปักหมุดแล้ว' },
+    vi: { title:'Sổ lưu bút', lede:'Để lại suy nghĩ, góp ý hoặc câu hỏi — không cần tài khoản.', nickPh:'Gọi bạn là gì? (không bắt buộc)', textPh:'Viết gì đó…', send:'Đăng', sending:'Đang đăng…', more:'Tải thêm', empty:'Chưa có bình luận — hãy là người đầu tiên.', loading:'Đang tải…', fail:'Không đăng được — vui lòng thử lại sau.', ok:'Đã đăng. Cảm ơn!', anon:'Ẩn danh', fast:'Hơi nhanh — đợi vài giây nhé.', need:'Hãy viết gì đó trước.', count:'{n} bình luận', offline:'Không tải được bình luận — tải lại trang.' , dev:'Nhà phát triển', reserved:'"XUComer" là tên dành riêng cho nhà phát triển — hãy chọn tên khác.' , out:'Đăng xuất', rpl:'Trả lời', rplPh:'Viết phản hồi…', cd:'Đợi {n} giây trước khi đăng lại.', ops:'Thao tác khác', del:'Xóa', delConfirm:'Nhấn lại để xác nhận', delOk:'Đã xóa', delNo:'Không thể xóa bình luận này', pinLbl:'Ghim', pinOn:'Ghim lên đầu', pinOff:'Bỏ ghim', pinOk:'Đã ghim', pinUndo:'Đã bỏ ghim', pinFail:'Thao tác thất bại — thử lại sau.',  ava:'Ảnh đại diện', avaDel:'Xóa ảnh đại diện', avaBad:'Không đọc được ảnh này — thử ảnh khác.', avaBig:'Ảnh quá lớn — chọn ảnh nhỏ hơn.', pinnedTag:'Đã ghim' },
+    id: { title:'Buku tamu', lede:'Tinggalkan ide, saran, atau pertanyaan — tanpa akun.', nickPh:'Kami panggil kamu apa? (opsional)', textPh:'Tulis sesuatu…', send:'Kirim', sending:'Mengirim…', more:'Muat lagi', empty:'Belum ada komentar — jadilah yang pertama.', loading:'Memuat…', fail:'Gagal mengirim — coba lagi nanti.', ok:'Terkirim. Terima kasih!', anon:'Anonim', fast:'Terlalu cepat — tunggu beberapa detik.', need:'Tulis sesuatu dulu.', count:'{n} komentar', offline:'Gagal memuat komentar — muat ulang halaman.', dev:'Pengembang', reserved:'Nama "XUComer" khusus untuk pengembang — silakan pilih nama lain.' , out:'Keluar', rpl:'Balas', rplPh:'Tulis balasan…', cd:'Tunggu {n} detik sebelum mengirim lagi.', ops:'Tindakan lain', del:'Hapus', delConfirm:'Ketuk lagi untuk mengonfirmasi', delOk:'Dihapus', delNo:'Komentar ini tidak dapat dihapus', pinLbl:'Sematkan', pinOn:'Sematkan di atas', pinOff:'Batal semat', pinOk:'Disematkan', pinUndo:'Semat dibatalkan', pinFail:'Gagal — coba lagi.',  ava:'Avatar', avaDel:'Hapus avatar', avaBad:'Gambar ini tidak bisa dibaca — coba yang lain.', avaBig:'Gambar terlalu besar — pilih yang lebih kecil.', pinnedTag:'Disematkan' }
   };
 
   /* 开发者专属昵称：访客不可使用，命中即加「开发者」标记 */
@@ -44,7 +46,9 @@
   const el = { form:$('form'), nick:$('nick'), text:$('text'), hp:$('hp'), msg:$('msg'),
                len:$('len'), send:$('send'), list:$('list'), more:$('more'),
                count:$('tCount'), as:$('as'), asTag:$('asTag'), asOut:$('asOut'),
-               pinBox:$('pinBox'), pinTxt:$('pinTxt'), title:document.title };
+               pinBox:$('pinBox'), pinTxt:$('pinTxt'),
+               avaBtn:$('avaBtn'), avaImg:$('avaImg'), avaPh:$('avaPh'),
+               avaDel:$('avaDel'), file:$('file'), title:document.title };
 
   let lang = 'zh_CN';
   let total = 0;
@@ -118,6 +122,97 @@
     return !!n && mineIds().indexOf(n) > -1;
   };
 
+  /* ---------------- 身份：昵称 + 头像 ---------------- */
+  /* 头像只允许前端压缩过的小图 data URL，别的东西一律不认。
+     数据库那头还有一模一样的校验，这里只是让非法值在本地就掉链子。 */
+  const AVA_OK = s => typeof s === 'string'
+    && s.length > 20 && s.length <= AVA_MAX
+    && s.indexOf('base64,') > 8
+    && (s.indexOf('data:image/png;') === 0
+        || s.indexOf('data:image/jpeg;') === 0
+        || s.indexOf('data:image/webp;') === 0);
+
+  let idNick = '';
+  let idAvatar = null;
+  const idViews = [];       /* 主表单和每个回复框共用同一份身份 */
+
+  function saveId() {
+    try {
+      localStorage.setItem(NICK_KEY, idNick);
+      if (idAvatar) localStorage.setItem(AVA_KEY, idAvatar);
+      else localStorage.removeItem(AVA_KEY);
+    } catch (e) {}
+  }
+
+  function paintViews(skip) {
+    idViews.forEach(v => {
+      if (v.nick && v.nick !== skip) v.nick.value = idNick;
+      if (v.img) {
+        if (idAvatar) { v.img.src = idAvatar; v.img.hidden = false; }
+        else { v.img.removeAttribute('src'); v.img.hidden = true; }
+      }
+      if (v.ph) v.ph.hidden = !!idAvatar;
+      if (v.del) v.del.hidden = !idAvatar;
+    });
+    reportHeight();
+  }
+
+  const setNick = (v, skip) => { idNick = clean(v, 24); saveId(); paintViews(skip); };
+  const setAvatar = d => { idAvatar = AVA_OK(d) ? d : null; saveId(); paintViews(); };
+
+  const mainView = { nick: el.nick, img: el.avaImg, ph: el.avaPh, del: el.avaDel, btn: el.avaBtn };
+  idViews.push(mainView);
+
+  function readFile(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result || ''));
+      fr.onerror = () => rej(new Error('read'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function loadImg(src) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => rej(new Error('img'));
+      im.src = src;
+    });
+  }
+
+  /* 居中裁成正方形再缩到 96px，这样不管原图多大、多长都可以压到几 KB */
+  function shrink(im, size, q) {
+    const cv = document.createElement('canvas');
+    cv.width = size;
+    cv.height = size;
+    const g = cv.getContext('2d');
+    const side = Math.min(im.width, im.height) || size;
+    g.drawImage(im, (im.width - side) / 2, (im.height - side) / 2, side, side, 0, 0, size, size);
+    return cv.toDataURL('image/jpeg', q);
+  }
+
+  async function pickAvatar(file) {
+    if (!file || !/^image\//.test(String(file.type || ''))) { showMsg(t('avaBad'), 'err'); return; }
+    if (file.size > 12 * 1024 * 1024) { showMsg(t('avaBig'), 'err'); return; }
+
+    let raw;
+    try { raw = await readFile(file); } catch (e) { showMsg(t('avaBad'), 'err'); return; }
+    let im;
+    try { im = await loadImg(raw); } catch (e) { showMsg(t('avaBad'), 'err'); return; }
+
+    const sizes = [96, 80, 64, 48];
+    const qs = [0.72, 0.6, 0.5];
+    for (const s of sizes) {
+      for (const q of qs) {
+        let d = '';
+        try { d = shrink(im, s, q); } catch (e) { showMsg(t('avaBad'), 'err'); return; }
+        if (d && d.length <= AVA_MAX) { setAvatar(d); return; }
+      }
+    }
+    showMsg(t('avaBig'), 'err');
+  }
+
   /* ---------------- 初始化云服务客户端 ---------------- */
   try {
     if (window.WorkBuddyCloud && window.WorkBuddyCloud.createWorkBuddyCloud) {
@@ -152,6 +247,13 @@
     document.documentElement.dir = key === 'ar' ? 'rtl' : 'ltr';
     document.title = t('title') + ' · XUComer';
     el.nick.placeholder = t('nickPh');
+    el.avaBtn.setAttribute('aria-label', t('ava'));
+    el.avaDel.setAttribute('aria-label', t('avaDel'));
+    idViews.forEach(v => {
+      if (v.nick) v.nick.placeholder = t('nickPh');
+      if (v.btn) v.btn.setAttribute('aria-label', t('ava'));
+      if (v.del) v.del.setAttribute('aria-label', t('avaDel'));
+    });
     el.text.placeholder = t('textPh');
     el.more.textContent = t('more');
     if (devKey) { el.asTag.textContent = t('dev'); el.asOut.textContent = t('out'); }
@@ -379,6 +481,14 @@
     nick.className = 'item-nick';
     nick.textContent = name;
 
+    if (AVA_OK(row.avatar)) {
+      const pic = document.createElement('img');
+      pic.className = 'item-ava';
+      pic.src = row.avatar;
+      pic.alt = '';
+      top.appendChild(pic);
+    }
+
     if (isDev(name)) {
       const cjk = (lang === 'zh_CN' || lang === 'zh_TW' || lang === 'ja');
       const tag = document.createElement('span');
@@ -434,6 +544,48 @@
     form.className = 'rform';
     form.hidden = true;
     form.autocomplete = 'off';
+
+    /* 回复也能选头衔和头像，默认沿用已经存下来的那一份 */
+    const head = document.createElement('div');
+    head.className = 'rhead';
+    const pick = document.createElement('button');
+    pick.type = 'button';
+    pick.className = 'ava-pick small';
+    pick.setAttribute('aria-label', t('ava'));
+    const pic = document.createElement('img');
+    pic.className = 'ava-img';
+    pic.alt = '';
+    const ph = document.createElement('span');
+    ph.className = 'ava-ph';
+    ph.textContent = '+';
+    pick.appendChild(pic);
+    pick.appendChild(ph);
+    const nickIn = document.createElement('input');
+    nickIn.type = 'text';
+    nickIn.maxLength = 24;
+    nickIn.placeholder = t('nickPh');
+    const rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'ava-del';
+    rm.setAttribute('aria-label', t('avaDel'));
+    rm.textContent = '×';
+    head.appendChild(pick);
+    head.appendChild(nickIn);
+    head.appendChild(rm);
+
+    const view = { nick: nickIn, img: pic, ph: ph, del: rm, btn: pick };
+    idViews.push(view);
+    pick.addEventListener('click', function (e) {
+      e.stopPropagation();
+      try { el.file.click(); } catch (err) {}
+    });
+    rm.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setAvatar(null);
+    });
+    nickIn.addEventListener('input', function () { setNick(nickIn.value, nickIn); });
+    paintViews(nickIn);
+
     const ta = document.createElement('textarea');
     ta.rows = 2;
     ta.maxLength = 600;
@@ -449,6 +601,7 @@
     sb.textContent = t('rpl');
     bar.appendChild(st);
     bar.appendChild(sb);
+    form.appendChild(head);
     form.appendChild(ta);
     form.appendChild(bar);
 
@@ -486,13 +639,16 @@
     if (reset) {
       loaded = 0;
       el.list.innerHTML = '';
+      /* 回复框会被整个重建，先把它们登记的身份视图清掉 */
+      idViews.length = 0;
+      idViews.push(mainView);
       renderPlaceholder(t('loading'));
       el.more.hidden = true;
     }
 
     const top = await cloud.database
       .from('comments')
-      .select('id, nick, body, created_at, pinned', { count: 'exact' })
+      .select('id, nick, body, created_at, avatar, pinned', { count: 'exact' })
       .is('parent_id', null)
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false })
@@ -517,7 +673,7 @@
     if (ids.length) {
       const rep = await cloud.database
         .from('comments')
-        .select('id, nick, body, created_at, parent_id')
+        .select('id, nick, body, created_at, avatar, parent_id')
         .in('parent_id', ids)
         .order('created_at', { ascending: true })
         .limit(600);
@@ -557,6 +713,7 @@
     } else {
       row.nick = clean(el.nick.value, 24) || t('anon');
     }
+    if (AVA_OK(idAvatar)) row.avatar = idAvatar;
     return row;
   }
 
@@ -599,7 +756,7 @@
     const { data, error } = await cloud.database
       .from('comments')
       .insert(row)
-      .select('id, nick, body, created_at, parent_id, pinned');
+      .select('id, nick, body, created_at, avatar, parent_id, pinned');
 
     mainBusy = false;
 
@@ -647,7 +804,7 @@
     const { data, error } = await cloud.database
       .from('comments')
       .insert(row)
-      .select('id, nick, body, created_at, parent_id');
+      .select('id, nick, body, created_at, avatar, parent_id');
 
     btn.dataset.busy = '0';
 
@@ -696,8 +853,7 @@
     el.as.hidden = true;
     if (el.pinBox) el.pinBox.checked = false;
     el.nick.hidden = false;
-    const saved = localStorage.getItem(NICK_KEY);
-    el.nick.value = (saved && !isDev(saved)) ? saved : '';
+    el.nick.value = idNick;
   }
 
   function leaveDev() {
@@ -727,17 +883,38 @@
   el.text.addEventListener('input', updateLen);
   el.more.addEventListener('click', () => load(false));
   el.asOut.addEventListener('click', leaveDev);
+  el.nick.addEventListener('input', function () { setNick(el.nick.value, el.nick); });
+  el.avaBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    try { el.file.click(); } catch (err) {}
+  });
+  el.avaDel.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setAvatar(null);
+  });
+  el.file.addEventListener('change', function () {
+    const f = el.file.files && el.file.files[0];
+    el.file.value = '';      /* 清掉才能真正再次选中同一个文件 */
+    pickAvatar(f);
+  });
   window.addEventListener('resize', reportHeight);
   document.addEventListener('click', function () {
     closeMenus();
     disarmAll();
   });
 
-  const savedNick = localStorage.getItem(NICK_KEY);
-  if (savedNick) {
-    if (isDev(savedNick)) localStorage.removeItem(NICK_KEY);
-    else el.nick.value = savedNick;
-  }
+  /* 上次用过的昵称和头像，直接填回来 */
+  (function initId() {
+    let n = '';
+    let a = '';
+    try { n = localStorage.getItem(NICK_KEY) || ''; } catch (e) {}
+    try { a = localStorage.getItem(AVA_KEY) || ''; } catch (e) {}
+    if (isDev(n)) { n = ''; try { localStorage.removeItem(NICK_KEY); } catch (e) {} }
+    idNick = clean(n, 24);
+    idAvatar = AVA_OK(a) ? a : null;
+    if (a && !idAvatar) { try { localStorage.removeItem(AVA_KEY); } catch (e) {} }
+    paintViews();
+  })();
 
   /* 父页面会通过 URL 参数带初始主题与语言，避免加载时闪一下 */
   (function readParams() {

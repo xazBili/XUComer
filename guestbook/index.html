@@ -18,7 +18,15 @@
       <label class="as-pin"><input id="pinBox" type="checkbox"><span id="pinTxt">置顶</span></label>
       <button id="asOut" class="as-out" type="button">退出登录</button>
     </div>
-    <input id="nick" type="text" maxlength="24" placeholder="怎么称呼你？（选填）">
+    <div class="id-row">
+      <button id="avaBtn" class="ava-pick" type="button" aria-label="头像">
+        <img id="avaImg" class="ava-img" alt="" hidden>
+        <span id="avaPh" class="ava-ph" aria-hidden="true">+</span>
+      </button>
+      <input id="nick" type="text" maxlength="24" placeholder="怎么称呼你？（选填）">
+      <button id="avaDel" class="ava-del" type="button" aria-label="移除头像" hidden>×</button>
+      <input id="file" type="file" accept="image/*" hidden>
+    </div>
     <textarea id="text" maxlength="600" rows="3" placeholder="想说点什么…"></textarea>
     <input id="hp" class="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="bar">

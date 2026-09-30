@@ -51,13 +51,97 @@ body {
   transition: border-color .18s, box-shadow .18s;
 }
 #nick { margin-bottom: 9px; }
-#text { resize: vertical; min-height: 74px; }
 
 #nick:focus,
 #text:focus {
   border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
 }
+
+#text { resize: vertical; min-height: 74px; }
+
+/* ---------- 头像 + 昵称 ---------- */
+.id-row,
+.rhead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.id-row { margin-bottom: 9px; }
+.id-row > #nick { flex: 1; min-width: 0; margin: 0; }
+
+.rhead { margin-bottom: 7px; }
+.rhead input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--input);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 9px;
+  outline: none;
+}
+
+.ava-pick {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line));
+  border-radius: 50%;
+  background: var(--input);
+  color: var(--dim);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .18s;
+}
+.ava-pick:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ava-pick.small { width: 30px; height: 30px; font-size: 14px; }
+
+.ava-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.ava-del {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--dim);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ava-del:hover { color: #ef5350; border-color: #ef5350; }
+
+/* 列表里的头像 */
+.item-ava {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-inline-end: 7px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.reply .item-ava { width: 20px; height: 20px; }
 
 #nick::placeholder,
 #text::placeholder { color: var(--dim); opacity: .85; }
