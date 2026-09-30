@@ -639,14 +639,6 @@ h1 {
   color-scheme: normal;
 }
 
-.comment-note {
-  margin: 18px 0 0;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--fg-dim);
-  opacity: .8;
-}
-
 .comment-warn {
   margin-top: 18px;
   padding: 14px 16px;
